@@ -39,7 +39,11 @@ public class Parser {
 	 * JSONParser parser = new JSONParser(); Object obj = parser.parse(json);
 	 * Map map = (Map)obj;
 	 */
-	public void parseMovie() {
+	public Map<Long, Movie> parseMovie() {
+		
+		Movie m = new Movie();
+		Map<Long, Movie> movieMap = new HashMap<Long, Movie>();
+		
 		try {
 
 			String line = "";
@@ -63,8 +67,12 @@ public class Parser {
 					String overview = (String) jsonObj.get("overview");
 					String title = (String) jsonObj.get("title");
 
+					System.out.println("ID: "+id);
+					m.setId(id);
 					System.out.println("Title: " + title);
+					m.setTitle(title);
 					System.out.println("Overview: " + overview);
+					m.setOverview(overview);
 
 					// loop array
 					JSONArray genres = (JSONArray) jsonObj.get("genres");
@@ -72,6 +80,7 @@ public class Parser {
 					while (giterator.hasNext()) {
 						String genre = (String) giterator.next().get("name");
 						System.out.println(genre);
+						m.setGenres(genre);
 					}
 
 					if (jsonObj.containsKey("keywords")) {
@@ -83,8 +92,11 @@ public class Parser {
 							JSONObject keyword = (JSONObject) kiterator.next()
 									.get("name");
 							System.out.println(keyword);
+							m.setKeywords((String) keyword.get("keywords")); 
 						}
 					}
+					
+					movieMap.put(m.getId(), m);
 				}
 			}
 
@@ -96,6 +108,7 @@ public class Parser {
 			e.printStackTrace();
 		}
 
+		return movieMap;
 	}
 
 	public Map<Long, String> parseGenre() {
