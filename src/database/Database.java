@@ -186,4 +186,13 @@ public class Database {
 			System.out.println("Added entry");
 		}
 	}
+	
+	/*
+	 * TODO: db query to extract all films with specific genre ID
+	 */
+	
+	
+	/*
+	 * TODO: db query to extract the overview of a film given its ID
+	 */
 }

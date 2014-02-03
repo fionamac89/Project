@@ -56,11 +56,11 @@ public class Movie {
 	}
 	
 	public String listToString(List<String> list) {
-	    String result = "";
-	    for (int i = 0; i < list.size(); i++) {
-	        result += list.get(i) + ",";
-	    }
-	    return result.substring(result.length()-2, result.length()-1);
+	    StringBuilder result = new StringBuilder();
+	    for (String value : list) {
+	      result.append(value+"\t");
+	    } 
+	    return result.toString();
 	}
 	
 }
