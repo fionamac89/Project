@@ -55,5 +55,12 @@ public class Movie {
 		this.overview = overview;
 	}
 	
+	public String listToString(List<String> list) {
+	    String result = "";
+	    for (int i = 0; i < list.size(); i++) {
+	        result += list.get(i) + ",";
+	    }
+	    return result.substring(result.length()-2, result.length()-1);
+	}
 	
 }

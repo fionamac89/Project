@@ -1,5 +1,9 @@
 package database;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -15,122 +19,171 @@ import jsonparser.Movie;
 import jsonparser.Parser;
 
 public class Database {
-	
+
 	private Connection con = null;
-    private String url = "jdbc:mysql://localhost:3306/fdb11130";
-    private String user = "fdb11130";
-    private String password = "rigulatn";
-    private Statement st = null;
-    private ResultSet rs = null;
-    private Parser input = null;
-    private Map<Long, String> genreMap = null;
-    private Map<Long, Movie> movieMap = null;
-    private PreparedStatement pst = null;
-    
-    public Database(String filepath) {
-        String url = "jdbc:mysql://localhost:3306/fdb11130";
-        String user = "fdb11130";
-        String password = "rigulatn";
-        try {
-			this.con = DriverManager.getConnection(this.url, this.user, this.password);
+	private String url = "jdbc:mysql://localhost:3306/fdb11130";
+	private String user = "fdb11130";
+	private String password = "rigulatn";
+	private Statement st = null;
+	private ResultSet rs = null;
+	private Parser input = null;
+	private Map<Long, String> genreMap = null;
+	private Movie movie = null;
+	private PreparedStatement pst = null;
+	private PreparedStatement mpst = null;
+	private BufferedReader br = null;
+	private FileReader reader = null;
+
+	public Database(String filepath) {
+		String url = "jdbc:mysql://localhost:3306/fdb11130";
+		String user = "fdb11130";
+		String password = "rigulatn";
+		try {
+			this.con = DriverManager.getConnection(this.url, this.user,
+					this.password);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-        input = new Parser(filepath);
-    }
+		try {
+			reader = new FileReader(filepath);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		br = new BufferedReader(reader);
+		input = new Parser();
+		movie = null;
+	}
 
-    public static void main(String[] args) {
-    	Database db = new Database("/Users/Fiona/Dropbox/Strath Uni/Year 4/Project/Script Test/testInput.txt");
+	public void run() {
 
-        try {
-        	db.dbConnect();
-        	db.movieMap = db.input.parseMovie();
-        	//db.dbInsertMovie();
-        } catch (SQLException ex) {
-            Logger lgr = Logger.getLogger(Database.class.getName());
-            lgr.log(Level.SEVERE, ex.getMessage(), ex);
+		try {
+			dbConnect();
+			String line = "";
 
-        } finally {
-            try {
-                if (db.rs != null) {
-                    db.rs.close();
-                }
-                if (db.st != null) {
-                    db.st.close();
-                }
-                if (db.con != null) {
-                    db.con.close();
-                }
+			while ((line = br.readLine()) != null) {
+				movie = input.parseMovie(line);
+				if (movie != null) {
+					dbInsertMovie();
+				}
+			}
+		} catch (SQLException ex) {
+			Logger lgr = Logger.getLogger(Database.class.getName());
+			lgr.log(Level.SEVERE, ex.getMessage(), ex);
 
-            } catch (SQLException ex) {
-                Logger lgr = Logger.getLogger(Database.class.getName());
-                lgr.log(Level.WARNING, ex.getMessage(), ex);
-            }
-        }
-        
-        /**
-         * Parser for Genres and insert into DB
-         */
-  /*  	Database db = new Database("/Users/Fiona/Dropbox/Strath Uni/Year 4/Project/Script Test/genres.txt");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			try {
+				if (rs != null) {
+					rs.close();
+				}
+				if (st != null) {
+					st.close();
+				}
+				if (con != null) {
+					con.close();
+				}
 
-        try {
-        	db.dbConnect();
-        	db.genreMap = db.input.parseGenre();
-        	db.dbInsertGenre();
-        } catch (SQLException ex) {
-            Logger lgr = Logger.getLogger(Database.class.getName());
-            lgr.log(Level.SEVERE, ex.getMessage(), ex);
+			} catch (SQLException ex) {
+				Logger lgr = Logger.getLogger(Database.class.getName());
+				lgr.log(Level.WARNING, ex.getMessage(), ex);
+			}
+		}
+	}
 
-        } finally {
-            try {
-                if (db.rs != null) {
-                    db.rs.close();
-                }
-                if (db.st != null) {
-                    db.st.close();
-                }
-                if (db.con != null) {
-                    db.con.close();
-                }
+	public void runGenre() {
+		/**
+		 * Parser for Genres and insert into DB
+		 */
 
-            } catch (SQLException ex) {
-                Logger lgr = Logger.getLogger(Database.class.getName());
-                lgr.log(Level.WARNING, ex.getMessage(), ex);
-            }
-        }*/
-    }
-    
-    private void dbConnect() throws SQLException {
-        this.st = this.con.createStatement();
-        this.rs = this.st.executeQuery("SELECT VERSION()");
+		try {
+			dbConnect();
+			genreMap = input.parseGenre();
+			dbInsertGenre();
+		} catch (SQLException ex) {
+			Logger lgr = Logger.getLogger(Database.class.getName());
+			lgr.log(Level.SEVERE, ex.getMessage(), ex);
 
-        if (this.rs.next()) {
-            System.out.println(this.rs.getString(1));
-        }
-    }
-    
-    private void dbInsertMovie() throws SQLException {
-    	pst = con.prepareStatement("INSERT INTO MovieTest(ID, Title, Overview, Keywords, Genres) VALUES(?,?,?,?,?)");
-    	for(Entry<Long, String> e : genreMap.entrySet()) {
-            long key = e.getKey();
-            String value = e.getValue();
-            pst.setLong(1, key);
-            pst.setString(2, value);
-            pst.executeUpdate();
-            System.out.println("Added entry");
-        }
-    }
-    
-    private void dbInsertGenre() throws SQLException {
-    	pst = con.prepareStatement("INSERT INTO GenreTest(ID, Genre) VALUES(?,?)");
-    	for(Entry<Long, String> e : genreMap.entrySet()) {
-            long key = e.getKey();
-            String value = e.getValue();
-            pst.setLong(1, key);
-            pst.setString(2, value);
-            pst.executeUpdate();
-            System.out.println("Added entry");
-        }
-    }
+		} finally {
+			try {
+				if (rs != null) {
+					rs.close();
+				}
+				if (st != null) {
+					st.close();
+				}
+				if (con != null) {
+					con.close();
+				}
+
+			} catch (SQLException ex) {
+				Logger lgr = Logger.getLogger(Database.class.getName());
+				lgr.log(Level.WARNING, ex.getMessage(), ex);
+			}
+		}
+
+	}
+
+	private void dbConnect() throws SQLException {
+		this.st = this.con.createStatement();
+		this.rs = this.st.executeQuery("SELECT VERSION()");
+
+		if (this.rs.next()) {
+			System.out.println(this.rs.getString(1));
+		}
+	}
+
+	private void dbInsertMovie() throws SQLException {
+		long key = movie.getId();
+		//System.out.println(movie.toString());
+		int genreID = -1;
+		mpst = con
+				.prepareStatement("INSERT INTO MoviesTest(MovieID, Title, Overview, Keywords, GenreID) VALUES(?,?,?,?,?)");
+		for (String genre : movie.getGenres()) {			
+			// TODO finish getting genre ID and adding movie into DB.
+			mpst.setLong(1, key);
+			mpst.setString(2, movie.getTitle());
+			mpst.setString(3, movie.getOverview());
+			if (movie.getKeywords().size() < 1) {
+				mpst.setString(4, null);
+			} else {
+				mpst.setString(4, movie.listToString(movie.getKeywords()));
+			}
+
+			genreID = dbGetGenreID(genre);
+			System.out.println(genreID);
+			mpst.setInt(5, genreID);
+			mpst.executeUpdate();
+		}
+
+		System.out.println("Added entry");
+	}
+
+	private int dbGetGenreID(String genre) throws SQLException {
+		pst = con.prepareStatement("SELECT ID FROM GenreTest WHERE Genre=(?)");
+		pst.setString(1, genre);
+		rs = pst.executeQuery();
+		int num = -1;
+		while (rs.next()) {
+			num = rs.getInt(1);
+		}
+
+		return num;
+	}
+
+	private void dbInsertGenre() throws SQLException {
+		pst = con
+				.prepareStatement("INSERT INTO GenreTest(ID, Genre) VALUES(?,?)");
+		for (Entry<Long, String> e : genreMap.entrySet()) {
+			long key = e.getKey();
+			String value = e.getValue();
+			pst.setLong(1, key);
+			pst.setString(2, value);
+			pst.executeUpdate();
+			System.out.println("Added entry");
+		}
+	}
 }

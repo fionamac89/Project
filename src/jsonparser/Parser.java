@@ -16,20 +16,11 @@ import org.json.simple.parser.ParseException;
 public class Parser {
 
 	private JSONParser parser = null;
-	private FileReader reader = null;
 	private Object obj = null;
 	private JSONObject jsonObj = null;
-	private BufferedReader br = null;
 
-	public Parser(String filepath) {
+	public Parser() {
 		parser = new JSONParser();
-		try {
-			reader = new FileReader(filepath);
-			br = new BufferedReader(reader);
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 
 	/*
@@ -39,16 +30,12 @@ public class Parser {
 	 * JSONParser parser = new JSONParser(); Object obj = parser.parse(json);
 	 * Map map = (Map)obj;
 	 */
-	public Map<Long, Movie> parseMovie() {
+	public Movie parseMovie(String line) {
 		
 		Movie m = new Movie();
-		Map<Long, Movie> movieMap = new HashMap<Long, Movie>();
 		
 		try {
 
-			String line = "";
-
-			while ((line = br.readLine()) != null) {
 				this.obj = parser.parse(line);
 
 				this.jsonObj = (JSONObject) obj;
@@ -60,7 +47,7 @@ public class Parser {
 				 */
 
 				if (jsonObj.containsKey("status_code")) {
-					;
+					m = null;
 				} else {
 
 					long id = (Long) jsonObj.get("id");
@@ -96,27 +83,23 @@ public class Parser {
 						}
 					}
 					
-					movieMap.put(m.getId(), m);
+					return m;
 				}
-			}
 
-		} catch (FileNotFoundException e1) {
-			e1.printStackTrace();
-		} catch (IOException e2) {
-			e2.printStackTrace();
+				
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
+		return m;
 
-		return movieMap;
 	}
 
 	public Map<Long, String> parseGenre() {
 		JSONObject thing = null;
 		Map<Long, String> genreMap = new HashMap<Long, String>();
-		try {
-			String line = br.readLine();
-			this.obj = parser.parse(line);
+	//	try {
+			//String line = br.readLine();
+			//this.obj = parser.parse(line);
 			this.jsonObj = (JSONObject) obj;
 			JSONArray genres = (JSONArray) jsonObj.get("genres");
 			Iterator<JSONObject> giterator = genres.iterator();
@@ -128,13 +111,13 @@ public class Parser {
 				genreMap.put(id, genre);
 				System.out.println(id+": "+genre);
 			}
-		} catch (IOException e) {
+	//	} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ParseException e) {
+		//	e.printStackTrace();
+	//	} catch (ParseException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	//		e.printStackTrace();
+		//}
 		
 		return genreMap;
 	}
