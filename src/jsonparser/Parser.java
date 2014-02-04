@@ -21,6 +21,7 @@ public class Parser {
 
 	public Parser() {
 		parser = new JSONParser();
+		jsonObj = new JSONObject();
 	}
 
 	/*
@@ -53,12 +54,18 @@ public class Parser {
 					long id = (Long) jsonObj.get("id");
 					String overview = (String) jsonObj.get("overview");
 					String title = (String) jsonObj.get("title");
+					String origTitle = (String) jsonObj.get("original_title");
 
 					System.out.println("ID: "+id);
 					m.setId(id);
+					System.out.println("Orig. Title: " + origTitle);
+					m.setOrigTitle(origTitle);
 					System.out.println("Title: " + title);
 					m.setTitle(title);
 					System.out.println("Overview: " + overview);
+					if((overview == null) || (overview.length() < 1) || (overview.toLowerCase().contains("no overview"))) {
+						overview = "";
+					}
 					m.setOverview(overview);
 
 					// loop array

@@ -9,6 +9,7 @@ public class Movie {
 	private String title = "";
 	private long id = 0;
 	private String overview = "";
+	private String origTitle = "";
 	
 	public Movie() {
 		this.genres = new ArrayList<String>();
@@ -55,6 +56,14 @@ public class Movie {
 		this.overview = overview;
 	}
 	
+	public String getOrigTitle() {
+		return origTitle;
+	}
+
+	public void setOrigTitle(String origTitle) {
+		this.origTitle = origTitle;
+	}
+
 	public String listToString(List<String> list) {
 	    StringBuilder result = new StringBuilder();
 	    for (String value : list) {

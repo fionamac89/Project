@@ -53,7 +53,7 @@ public class Database {
 		}
 		br = new BufferedReader(reader);
 		input = new Parser();
-		movie = null;
+		movie = new Movie();
 	}
 
 	public void run() {
@@ -63,6 +63,7 @@ public class Database {
 			String line = "";
 
 			while ((line = br.readLine()) != null) {
+				
 				movie = input.parseMovie(line);
 				if (movie != null) {
 					dbInsertMovie();
@@ -138,15 +139,23 @@ public class Database {
 
 	private void dbInsertMovie() throws SQLException {
 		long key = movie.getId();
-		//System.out.println(movie.toString());
+		// System.out.println(movie.toString());
 		int genreID = -1;
 		mpst = con
 				.prepareStatement("INSERT INTO MoviesTest(MovieID, Title, Overview, Keywords, GenreID) VALUES(?,?,?,?,?)");
-		for (String genre : movie.getGenres()) {			
+		for (String genre : movie.getGenres()) {
 			// TODO finish getting genre ID and adding movie into DB.
 			mpst.setLong(1, key);
-			mpst.setString(2, movie.getTitle());
-			mpst.setString(3, movie.getOverview());
+			if (movie.getTitle().length() < 1) {
+				mpst.setString(2, movie.getOrigTitle());
+			} else {
+				mpst.setString(2, movie.getTitle());
+			}
+			if (movie.getOverview().length() < 1) {
+				mpst.setString(3, null);
+			} else {
+				mpst.setString(3, movie.getOverview());
+			}
 			if (movie.getKeywords().size() < 1) {
 				mpst.setString(4, null);
 			} else {
@@ -186,13 +195,19 @@ public class Database {
 			System.out.println("Added entry");
 		}
 	}
-	
+
 	/*
 	 * TODO: db query to extract all films with specific genre ID
 	 */
-	
-	
+
 	/*
 	 * TODO: db query to extract the overview of a film given its ID
 	 */
+
+	public void dbDeleteMovies() throws SQLException {
+		st = con.createStatement();
+		if (st.execute("DELETE FROM MoviesTest")) {
+			System.out.println("MoviesTest content Deleted.");
+		}
+	}
 }
