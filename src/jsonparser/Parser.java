@@ -1,9 +1,5 @@
 package jsonparser;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -32,68 +28,65 @@ public class Parser {
 	 * Map map = (Map)obj;
 	 */
 	public Movie parseMovie(String line) {
-		
+
 		Movie m = new Movie();
-		
+
 		try {
 
-				this.obj = parser.parse(line);
+			this.obj = parser.parse(line);
 
-				this.jsonObj = (JSONObject) obj;
+			this.jsonObj = (JSONObject) obj;
 
-				/*
-				 * status_code - first field if invalid result genres - list
-				 * homepage id imdb_id original_title overview - if this is
-				 * null/empty don't use the object..? title
-				 */
+			/*
+			 * status_code - first field if invalid result genres - list
+			 * homepage id imdb_id original_title overview - if this is
+			 * null/empty don't use the object..? title
+			 */
 
-				if (jsonObj.containsKey("status_code")) {
-					m = null;
-				} else {
+			if (jsonObj.containsKey("status_code")) {
+				m = null;
+			} else {
 
-					long id = (Long) jsonObj.get("id");
-					String overview = (String) jsonObj.get("overview");
-					String title = (String) jsonObj.get("title");
-					String origTitle = (String) jsonObj.get("original_title");
+				long id = (Long) jsonObj.get("id");
+				String overview = (String) jsonObj.get("overview");
+				String title = (String) jsonObj.get("title");
+				String origTitle = (String) jsonObj.get("original_title");
 
-					System.out.println("ID: "+id);
-					m.setId(id);
-					System.out.println("Orig. Title: " + origTitle);
-					m.setOrigTitle(origTitle);
-					System.out.println("Title: " + title);
-					m.setTitle(title);
-					System.out.println("Overview: " + overview);
-					if((overview == null) || (overview.length() < 1) || (overview.toLowerCase().contains("no overview"))) {
-						overview = "";
-					}
-					m.setOverview(overview);
+				System.out.println("ID: " + id);
+				m.setId(id);
+				System.out.println("Orig. Title: " + origTitle);
+				m.setOrigTitle(origTitle);
+				System.out.println("Title: " + title);
+				m.setTitle(title);
+				System.out.println("Overview: " + overview);
+				if ((overview == null) || (overview.length() < 1)
+						|| (overview.toLowerCase().contains("no overview"))) {
+					overview = "";
+				}
+				m.setOverview(overview);
 
-					// loop array
-					JSONArray genres = (JSONArray) jsonObj.get("genres");
-					Iterator<JSONObject> giterator = genres.iterator();
-					while (giterator.hasNext()) {
-						String genre = (String) giterator.next().get("name");
-						System.out.println(genre);
-						m.setGenres(genre);
-					}
-
-					if (jsonObj.containsKey("keywords")) {
-						JSONObject keywords = (JSONObject) jsonObj
-								.get("keywords");
-						JSONArray kwords = (JSONArray) keywords.get("keywords");
-						Iterator<JSONObject> kiterator = kwords.iterator();
-						while (kiterator.hasNext()) {
-							JSONObject keyword = (JSONObject) kiterator.next()
-									.get("name");
-							System.out.println(keyword);
-							m.setKeywords((String) keyword.get("keywords")); 
-						}
-					}
-					
-					return m;
+				// loop array
+				JSONArray genres = (JSONArray) jsonObj.get("genres");
+				Iterator<JSONObject> giterator = genres.iterator();
+				while (giterator.hasNext()) {
+					String genre = (String) giterator.next().get("name");
+					System.out.println(genre);
+					m.setGenres(genre);
 				}
 
-				
+				/*
+				 * if (jsonObj.containsKey("keywords")) { JSONObject keywords =
+				 * (JSONObject) jsonObj .get("keywords"); JSONArray kwords =
+				 * (JSONArray) keywords.get("keywords"); Iterator<JSONObject>
+				 * kiterator = kwords.iterator(); while (kiterator.hasNext()) {
+				 * JSONObject keyword = (JSONObject) kiterator.next()
+				 * .get("name"); System.out.println(keyword);
+				 * m.setKeywords((String) keyword.get("keywords")); } }
+				 */
+
+				return m;
+			}
+
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
@@ -101,12 +94,12 @@ public class Parser {
 
 	}
 
-	public Map<Long, String> parseGenre() {
+	public Map<Long, String> parseGenre(String line) {
 		JSONObject thing = null;
 		Map<Long, String> genreMap = new HashMap<Long, String>();
-	//	try {
-			//String line = br.readLine();
-			//this.obj = parser.parse(line);
+		try {
+			this.obj = parser.parse(line);
+
 			this.jsonObj = (JSONObject) obj;
 			JSONArray genres = (JSONArray) jsonObj.get("genres");
 			Iterator<JSONObject> giterator = genres.iterator();
@@ -116,16 +109,14 @@ public class Parser {
 				String genre = (String) thing.get("name");
 				long id = (Long) thing.get("id");
 				genreMap.put(id, genre);
-				System.out.println(id+": "+genre);
+				System.out.println(id + ": " + genre);
 			}
-	//	} catch (IOException e) {
-			// TODO Auto-generated catch block
-		//	e.printStackTrace();
-	//	} catch (ParseException e) {
-			// TODO Auto-generated catch block
-	//		e.printStackTrace();
-		//}
-		
+
+		} catch (ParseException e) {
+
+			e.printStackTrace();
+		}
+
 		return genreMap;
 	}
 

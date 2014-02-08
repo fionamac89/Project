@@ -2,8 +2,9 @@ package wordplay;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import jsonparser.Movie;
 
@@ -18,11 +19,10 @@ public class Tagger {
 	
 	private TokenStream tokenStream = null;
 	private String output = "";
-	private List<String> genreWords = null;
-	private Movie movie = null;
+	private Map<String, Integer> importantText = null;
 	
 	public Tagger() {
-		genreWords = new ArrayList<String>();
+		importantText = new HashMap<String, Integer>();
 	}
 	
 	/*
@@ -38,7 +38,7 @@ public class Tagger {
 			while (tokenStream.incrementToken()) 
 			{
 				output = token.toString().toString();
-		        genreWords.add(output);
+		        termOccurrence(output);
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -46,7 +46,19 @@ public class Tagger {
 		}
 	}
 	
-	public List<String> getWords() {
-		return genreWords;
+	public void termOccurrence(String text) {
+		if(importantText.containsKey(text)) {
+			int temp = importantText.get(text);
+			temp+=1;
+			importantText.remove(text);
+			importantText.put(text, temp);
+		} else {
+			importantText.put(text, 1);
+		}
+		
+	}
+	
+	public Map<String, Integer> getWords() {
+		return importantText;
 	}
 }
