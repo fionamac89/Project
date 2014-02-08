@@ -30,8 +30,8 @@ public class Tagger {
 	 */
 	
 	public void removeStopWords(String content) {
-        tokenStream = new StandardTokenizer(Version.LUCENE_46, new StringReader(content)); //Add String Reader?
         StringBuilder sb = new StringBuilder();
+		tokenStream = new StandardTokenizer(Version.LUCENE_46, new StringReader(content)); //Add String Reader?
         tokenStream = new StopFilter(Version.LUCENE_46, tokenStream, StandardAnalyzer.STOP_WORDS_SET);
         CharTermAttribute token = tokenStream.getAttribute(CharTermAttribute.class);
         try {

@@ -20,8 +20,13 @@ public class Database {
 	private ResultSet rs = null;
 	private PreparedStatement pst = null;
 	private PreparedStatement mpst = null;
+	private PreparedStatement fgpst = null;
 
 	public Database() {
+		//dbConnect();
+	}
+
+	public void dbConnect() {
 		/*
 		 * Read this data in from (encrypted?) file for security?
 		 */
@@ -36,15 +41,14 @@ public class Database {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-
 	}
-
+	
 	public void dbInsertMovie(Movie movie) {
 		long key = movie.getId();
 		int genreID = -1;
 		try {
 			mpst = con
-					.prepareStatement("INSERT IGNORE INTO MoviesTest(MovieID, Title, Overview, Keywords, GenreID) VALUES(?,?,?,?,?)");
+					.prepareStatement("INSERT IGNORE INTO FilmList(ID, Title, Overview) VALUES(?,?,?)");
 
 			for (String genre : movie.getGenres()) {
 				// TODO finish getting genre ID and adding movie into DB.
@@ -59,16 +63,9 @@ public class Database {
 				} else {
 					mpst.setString(3, movie.getOverview());
 				}
-				if (movie.getKeywords().size() < 1) {
-					mpst.setString(4, null);
-				} else {
-					mpst.setString(4, movie.listToString(movie.getKeywords()));
-				}
 
-				genreID = dbGetGenreID(genre);
-				System.out.println(genreID);
-				mpst.setInt(5, genreID);
 				mpst.executeUpdate();
+				dbCreateFGLink(movie, genre);
 			}
 		} catch (SQLException ex) {
 			Logger lgr = Logger.getLogger(Database.class.getName());
@@ -76,20 +73,8 @@ public class Database {
 			ex.printStackTrace();
 		} finally {
 			try {
-				if (rs != null) {
-					rs.close();
-				}
-				if (st != null) {
-					st.close();
-				}
 				if (mpst != null) {
 					mpst.close();
-				}
-				if (pst != null) {
-					pst.close();
-				}
-				if (con != null) {
-					con.close();
 				}
 
 			} catch (SQLException ex) {
@@ -101,6 +86,33 @@ public class Database {
 		}
 	}
 
+	public void dbCreateFGLink(Movie movie, String genre) {
+		try {
+			fgpst = con
+					.prepareStatement("INSERT IGNORE INTO FGLink(FilmID, GenreID) VALUES(?,?)");
+			fgpst.setLong(1, movie.getId());
+			int genreID = dbGetGenreID(genre);
+			fgpst.setInt(2, genreID);
+			fgpst.executeUpdate();
+			System.out.println("Link created for "+ genre);
+		} catch (SQLException ex) {
+			Logger lgr = Logger.getLogger(Database.class.getName());
+			lgr.log(Level.SEVERE, ex.getMessage(), ex);
+			ex.printStackTrace();
+		} finally {
+			try {
+				if (fgpst != null) {
+					fgpst.close();
+				}
+
+			} catch (SQLException ex) {
+				Logger lgr = Logger.getLogger(Database.class.getName());
+				lgr.log(Level.WARNING, ex.getMessage(), ex);
+			}
+		}
+
+	}
+	
 	public int dbGetGenreID(String genre) {
 		int num = -1;
 		try {
@@ -117,22 +129,14 @@ public class Database {
 
 		} finally {
 			try {
-				if (rs != null) {
-					rs.close();
-				}
-				if (st != null) {
-					st.close();
-				}
-				if (mpst != null) {
-					mpst.close();
-				}
+
 				if (pst != null) {
 					pst.close();
 				}
-				if (con != null) {
-					con.close();
+				if (rs != null) {
+					rs.close();
 				}
-
+				
 			} catch (SQLException ex) {
 				Logger lgr = Logger.getLogger(Database.class.getName());
 				lgr.log(Level.WARNING, ex.getMessage(), ex);
@@ -160,20 +164,8 @@ public class Database {
 
 		} finally {
 			try {
-				if (rs != null) {
-					rs.close();
-				}
-				if (st != null) {
-					st.close();
-				}
-				if (mpst != null) {
-					mpst.close();
-				}
 				if (pst != null) {
 					pst.close();
-				}
-				if (con != null) {
-					con.close();
 				}
 
 			} catch (SQLException ex) {
@@ -190,33 +182,36 @@ public class Database {
 	/*
 	 * TODO: db query to extract the overview of a film given its ID
 	 */
+	
+	/*
+	 * TODO: db query to create a new TrainingSet table
+	 */
+	
+	/*
+	 * TODO: db query to create a new TestSet table
+	 */
+	
+	/*
+	 * TODO: db query to populate TrainingSet table
+	 */
+	
+	/*
+	 * TODO: db query to populate TestSet table
+	 */
 
 	public void dbDeleteMovies() {
 		try {
 			st = con.createStatement();
-			if (st.execute("DELETE FROM MoviesTest")) {
-				System.out.println("MoviesTest content Deleted.");
-			}
+			st.execute("DELETE FROM FilmList");
+			System.out.println("FilmList content Deleted.");
 		} catch (SQLException ex) {
 			Logger lgr = Logger.getLogger(Database.class.getName());
 			lgr.log(Level.SEVERE, ex.getMessage(), ex);
 
 		} finally {
 			try {
-				if (rs != null) {
-					rs.close();
-				}
 				if (st != null) {
 					st.close();
-				}
-				if (mpst != null) {
-					mpst.close();
-				}
-				if (pst != null) {
-					pst.close();
-				}
-				if (con != null) {
-					con.close();
 				}
 
 			} catch (SQLException ex) {
