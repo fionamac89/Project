@@ -11,7 +11,7 @@ public interface ISystem {
 	public void createTrainingSet(int size);
 	public void createTestSet(List<Integer> movies, int id);
 	public void createThesaurus(String name);
-	public void populateThesaurus(List<Integer> training, int genreid);
+	public void populateThesaurus();
 	public void classifyTestData();
 	public void viewClassifiedData();
 }

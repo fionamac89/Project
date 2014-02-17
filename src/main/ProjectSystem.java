@@ -15,7 +15,7 @@ import jsonparser.Movie;
 import jsonparser.Parser;
 import database.Database;
 
-public class System implements ISystem {
+public class ProjectSystem implements ISystem {
 
 	private Database db = null;
 	private BufferedReader br = null;
@@ -25,7 +25,7 @@ public class System implements ISystem {
 	private Tagger tagger = null;
 	private Map<Long, String> genreMap = null;
 
-	public System() {
+	public ProjectSystem() {
 		db = new Database();
 		parser = new Parser();
 		movie = new Movie();
@@ -38,7 +38,6 @@ public class System implements ISystem {
 
 	public void addMovieList(String filepath) {
 		try {
-			db.dbConnect();
 			reader = new FileReader(filepath);
 			br = new BufferedReader(reader);
 			String line = "";
@@ -64,7 +63,6 @@ public class System implements ISystem {
 
 	public void addGenreList(String filepath) {
 		try {
-			db.dbConnect();
 			reader = new FileReader(filepath);
 			br = new BufferedReader(reader);
 			String line = br.readLine();
@@ -82,15 +80,18 @@ public class System implements ISystem {
 		List<Integer> genres = db.dbGetGenreList();
 		List<Integer> movies = null;
 		List<Integer> training = new ArrayList<Integer>();
-		int i = 0;
 		for (Integer genreid : genres) {
+			int i = 0;
 			movies = db.dbGetMoviesForGenre(genreid);
-			while((i < size) && (i < movies.size())){
+			int listSize = movies.size();
+			while((i < size) && (i < listSize)){
 				training.add(movies.remove(0));
 				i++;
 			}
+			System.out.println(genreid + ": " + training.size());
 			db.dbPopulateTrainingSet(training, genreid);
 			createTestSet(movies, genreid);
+			training.clear();
 		}
 	}
 
@@ -106,14 +107,17 @@ public class System implements ISystem {
 		
 	}
 
-	public void populateThesaurus(List<Integer> training, int genreid) {
+	public void populateThesaurus() {
 		tagger = new Tagger();
-		Map<Integer, String> overviews = db.dbGetOverview(training);
-		for (Entry<Integer, String> e : overviews.entrySet()) {
-			tagger.removeStopWords(e.getValue());
-		}
-		
-		
+		Map<Integer, Integer> trainingSet = db.dbGetTrainingSet();
+		String overview = "";
+		int filmid = 0;
+		for (Entry<Integer, Integer> e : trainingSet.entrySet()) {
+			filmid = e.getKey();
+			overview = db.dbGetOverview(filmid);
+			tagger.removeStopWords(overview);
+			db.dbPopulateThesaurus(tagger.getWords(), e.getValue());
+		}	
 	}
 
 	public void classifyTestData() {

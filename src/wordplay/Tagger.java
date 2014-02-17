@@ -30,16 +30,19 @@ public class Tagger {
 	 */
 	
 	public void removeStopWords(String content) {
-        StringBuilder sb = new StringBuilder();
+       // StringBuilder sb = new StringBuilder();
 		tokenStream = new StandardTokenizer(Version.LUCENE_46, new StringReader(content));
         tokenStream = new StopFilter(Version.LUCENE_46, tokenStream, StandardAnalyzer.STOP_WORDS_SET);
-        CharTermAttribute token = tokenStream.getAttribute(CharTermAttribute.class);
+        CharTermAttribute token = tokenStream.addAttribute(CharTermAttribute.class);
         try {
+        	tokenStream.reset();
 			while (tokenStream.incrementToken()) 
 			{
-				output = token.toString().toString();
+				output = token.toString();
 		        termOccurrence(output);
 			}
+			tokenStream.end();
+			tokenStream.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -47,7 +50,7 @@ public class Tagger {
 	}
 	
 	public void termOccurrence(String text) {
-		if(importantText.containsKey(text)) {
+		if(importantText.containsKey(text.toLowerCase())) {
 			int temp = importantText.get(text);
 			temp+=1;
 			importantText.remove(text);

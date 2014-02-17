@@ -26,7 +26,7 @@ public class Database {
 	private PreparedStatement fgpst = null;
 
 	public Database() {
-		// dbConnect();
+		dbConnect();
 	}
 
 	public void dbConnect() {
@@ -208,25 +208,27 @@ public class Database {
 	 * TODO: db query to extract all films with specific genre ID
 	 */
 	public List<Integer> dbGetMoviesForGenre(int genre) {
+		PreparedStatement gpst = null;
+		ResultSet grs = null;
 		List<Integer> movies = new ArrayList<Integer>();
 		try {
-			pst = con
-					.prepareStatement("SELECT FilmID FROM FGLink WHERE GenreID==(?)");
-			pst.setInt(genre, 1);
-			rs = pst.executeQuery();
-			while (rs.next()) {
-				movies.add(rs.getInt("FilmID"));
+			gpst = con
+					.prepareStatement("SELECT FilmID FROM FGLink WHERE GenreID=?");
+			gpst.setInt(1, genre);
+			grs = gpst.executeQuery();
+			while (grs.next()) {
+				movies.add(grs.getInt("FilmID"));
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
 			try {
-				if (pst != null) {
-					pst.close();
+				if (gpst != null) {
+					gpst.close();
 				}
-				if (rs != null) {
-					rs.close();
+				if (grs != null) {
+					grs.close();
 				}
 
 			} catch (SQLException ex) {
@@ -241,18 +243,16 @@ public class Database {
 	/*
 	 * TODO: db query to extract the overview of all films given their IDs
 	 */
-	public Map<Integer, String> dbGetOverview(List<Integer> movies) {
-		Map<Integer, String> overviews = new HashMap<Integer, String>();
+	public String dbGetOverview(int filmid) {
+		String overview = "";
 		try {
 			pst = con
-					.prepareStatement("SELECT Overview FROM FilmList WHERE FilmID==(?)");
-			for (Integer filmid : movies) {
-				pst.setInt(filmid, 1);
+					.prepareStatement("SELECT Overview FROM FilmList WHERE ID=?");
+				pst.setInt(1, filmid);
 				rs = pst.executeQuery();
 				while (rs.next()) {
-					overviews.put(filmid, rs.getString("Overview"));
+					overview = rs.getString("Overview");
 				}
-			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -270,12 +270,8 @@ public class Database {
 				lgr.log(Level.WARNING, ex.getMessage(), ex);
 			}
 		}
-		return overviews;
+		return overview;
 	}
-
-	/*
-	 * TODO: db query to create a new TrainingSet table
-	 */
 
 	/*
 	 * TODO: db query to create a new TestSet table
@@ -316,7 +312,7 @@ public class Database {
 	public void dbPopulateTestSet(List<Integer> test, int id) {
 		try {
 			pst = con
-					.prepareStatement("INSERT IGNORE INTO TrainingSet(FilmID, GenreID) VALUES(?,?)");
+					.prepareStatement("INSERT IGNORE INTO TestSet(FilmID, GenreID) VALUES(?,?)");
 			for (Integer filmid : test) {
 				pst.setInt(1, filmid);
 				pst.setInt(2, id);
@@ -397,6 +393,37 @@ public class Database {
 		return test;
 	}
 
+	/*
+	 * TODO: populate thesaurus
+	 */
+	public void dbPopulateThesaurus(Map<String, Integer> thes, int genreid) {
+		PreparedStatement ppst = null;
+		try {
+			ppst = con
+					.prepareStatement("INSERT IGNORE INTO Thesaurus(GenreID, Word, Frequency) VALUES (?,?,?)");
+			for(Entry<String, Integer> e : thes.entrySet()) {
+				ppst.setInt(1, genreid);
+				ppst.setString(2, e.getKey());
+				ppst.setInt(3, e.getValue());
+				ppst.executeUpdate();
+			}
+
+		} catch (SQLException ex) {
+			Logger lgr = Logger.getLogger(Database.class.getName());
+			lgr.log(Level.SEVERE, ex.getMessage(), ex);
+
+		} finally {
+			try {
+				if (ppst != null) {
+					ppst.close();
+				}
+			} catch (SQLException ex) {
+				Logger lgr = Logger.getLogger(Database.class.getName());
+				lgr.log(Level.WARNING, ex.getMessage(), ex);
+			}
+		}
+	}
+
 	public void dbDeleteMovies() {
 		try {
 			st = con.createStatement();
@@ -415,6 +442,32 @@ public class Database {
 				Logger lgr = Logger.getLogger(Database.class.getName());
 				lgr.log(Level.WARNING, ex.getMessage(), ex);
 			}
+		}
+	}
+
+	public void dbDisconnect() {
+		try {
+			if (con != null) {
+				con.close();
+			}
+			if (st != null) {
+				st.close();
+			}
+			if (rs != null) {
+				rs.close();
+			}
+			if (pst != null) {
+				pst.close();
+			}
+			if (mpst != null) {
+				mpst.close();
+			}
+			if (fgpst != null) {
+				fgpst.close();
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 }

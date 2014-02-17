@@ -1,6 +1,7 @@
 package test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
+import main.ISystem;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -9,9 +10,11 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class SystemTest {
+	private static System system = null;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
+		system = new System();
 	}
 
 	@AfterClass
