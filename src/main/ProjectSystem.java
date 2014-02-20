@@ -66,7 +66,7 @@ public class ProjectSystem implements ISystem {
 			reader = new FileReader(filepath);
 			br = new BufferedReader(reader);
 			String line = br.readLine();
-			
+
 			genreMap = parser.parseGenre(line);
 			db.dbInsertGenre(genreMap);
 		} catch (FileNotFoundException e) {
@@ -84,7 +84,7 @@ public class ProjectSystem implements ISystem {
 			int i = 0;
 			movies = db.dbGetMoviesForGenre(genreid);
 			int listSize = movies.size();
-			while((i < size) && (i < listSize)){
+			while ((i < size) && (i < listSize)) {
 				training.add(movies.remove(0));
 				i++;
 			}
@@ -104,20 +104,27 @@ public class ProjectSystem implements ISystem {
 	 * Not needed?
 	 */
 	public void createThesaurus(String name) {
-		
+
 	}
+
+	// Alter this mechanism to do everything by Genre. May need new query to get
+	// all films from training set with GenreID
 
 	public void populateThesaurus() {
 		tagger = new Tagger();
-		Map<Integer, Integer> trainingSet = db.dbGetTrainingSet();
+		List<Integer> genres = db.dbGetGenreList();
+		List<Integer> films = null;
 		String overview = "";
-		int filmid = 0;
-		for (Entry<Integer, Integer> e : trainingSet.entrySet()) {
-			filmid = e.getKey();
-			overview = db.dbGetOverview(filmid);
-			tagger.removeStopWords(overview);
-			db.dbPopulateThesaurus(tagger.getWords(), e.getValue());
-		}	
+		for (Integer genreid : genres) {
+			films = db.dbGetMoviesForGenreTrainSet(genreid);
+			for (Integer filmid : films) {
+				overview = db.dbGetOverview(filmid);
+				tagger.removeStopWords(overview);
+			}
+			db.dbPopulateThesaurus(tagger.getWords(), genreid);
+			System.out.println(genreid + ": " + tagger.getWords());
+			tagger.clearWords();
+		}
 	}
 
 	public void classifyTestData() {

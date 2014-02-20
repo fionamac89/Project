@@ -9,7 +9,8 @@ public class Run {
 		/*Movie File: "/Users/Fiona/Dropbox/Strath Uni/Year 4/Project/Script Test/output3.txt"*/
 		//system.addMovieList("/Users/Fiona/Dropbox/Strath Uni/Year 4/Project/Script Test/output3.txt");
 		/*Genre File: "/Users/Fiona/Dropbox/Strath Uni/Year 4/Project/Script Test/genres.txt"*/
-		system.createTrainingSet(250);
+		//system.createTrainingSet(250);
+		system.populateThesaurus();
 	}
 
 }

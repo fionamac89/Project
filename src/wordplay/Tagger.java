@@ -16,30 +16,34 @@ import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.util.Version;
 
 public class Tagger {
-	
+
 	private TokenStream tokenStream = null;
 	private String output = "";
 	private Map<String, Integer> importantText = null;
-	
+
 	public Tagger() {
 		importantText = new HashMap<String, Integer>();
 	}
-	
+
 	/*
 	 * Stop word analysis
 	 */
-	
+
 	public void removeStopWords(String content) {
-       // StringBuilder sb = new StringBuilder();
-		tokenStream = new StandardTokenizer(Version.LUCENE_46, new StringReader(content));
-        tokenStream = new StopFilter(Version.LUCENE_46, tokenStream, StandardAnalyzer.STOP_WORDS_SET);
-        CharTermAttribute token = tokenStream.addAttribute(CharTermAttribute.class);
-        try {
-        	tokenStream.reset();
-			while (tokenStream.incrementToken()) 
-			{
+		// StringBuilder sb = new StringBuilder();
+		tokenStream = new StandardTokenizer(Version.LUCENE_46,
+				new StringReader(content));
+		tokenStream = new StopFilter(Version.LUCENE_46, tokenStream,
+				StandardAnalyzer.STOP_WORDS_SET);
+		CharTermAttribute token = tokenStream
+				.addAttribute(CharTermAttribute.class);
+		try {
+			tokenStream.reset();
+			while (tokenStream.incrementToken()) {
 				output = token.toString();
-		        termOccurrence(output);
+				if (output != null) {
+					termOccurrence(output.toLowerCase());
+				}
 			}
 			tokenStream.end();
 			tokenStream.close();
@@ -48,20 +52,24 @@ public class Tagger {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void termOccurrence(String text) {
-		if(importantText.containsKey(text.toLowerCase())) {
+		if (importantText.containsKey(text)) {
 			int temp = importantText.get(text);
-			temp+=1;
+			temp += 1;
 			importantText.remove(text);
 			importantText.put(text, temp);
 		} else {
 			importantText.put(text, 1);
 		}
-		
+
 	}
 	
 	public Map<String, Integer> getWords() {
 		return importantText;
+	}
+	
+	public void clearWords() {
+		importantText.clear();
 	}
 }

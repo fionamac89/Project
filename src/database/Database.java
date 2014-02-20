@@ -240,6 +240,39 @@ public class Database {
 		return movies;
 	}
 
+	public List<Integer> dbGetMoviesForGenreTrainSet(int genre) {
+		PreparedStatement gpst = null;
+		ResultSet grs = null;
+		List<Integer> movies = new ArrayList<Integer>();
+		try {
+			gpst = con
+					.prepareStatement("SELECT FilmID FROM TrainingSet WHERE GenreID=?");
+			gpst.setInt(1, genre);
+			grs = gpst.executeQuery();
+			while (grs.next()) {
+				movies.add(grs.getInt("FilmID"));
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			try {
+				if (gpst != null) {
+					gpst.close();
+				}
+				if (grs != null) {
+					grs.close();
+				}
+
+			} catch (SQLException ex) {
+				Logger lgr = Logger.getLogger(Database.class.getName());
+				lgr.log(Level.WARNING, ex.getMessage(), ex);
+			}
+		}
+
+		return movies;
+	}
+	
 	/*
 	 * TODO: db query to extract the overview of all films given their IDs
 	 */
