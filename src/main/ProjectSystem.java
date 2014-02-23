@@ -10,9 +10,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import wordplay.Tagger;
 import jsonparser.Movie;
 import jsonparser.Parser;
+import wordplay.Tagger;
+import classifier.Classifier;
 import database.Database;
 
 public class ProjectSystem implements ISystem {
@@ -23,13 +24,15 @@ public class ProjectSystem implements ISystem {
 	private Parser parser = null;
 	private Movie movie = null;
 	private Tagger tagger = null;
-	private Map<Long, String> genreMap = null;
+	private Map<Long, String> genreMap = null; 
+	private Classifier cls = null;
 
 	public ProjectSystem() {
 		db = new Database();
 		parser = new Parser();
 		movie = new Movie();
 		genreMap = new HashMap<Long, String>();
+		cls = new Classifier();
 	}
 
 	public void addMovie() {
@@ -127,12 +130,34 @@ public class ProjectSystem implements ISystem {
 		}
 	}
 
+	public void trainClassifier() {
+		Map<Integer, String> genreList = db.dbGetGenreListMap();
+		
+		for(Integer genreid : genreList.keySet()) {
+			List<String> wordsList = db.dbGetThesaurus(genreid);
+			cls.addToDataset(genreList.get(genreid), cls.readLines(wordsList));
+		}
+		cls.trainClassifier();
+		cls.setKnowledgeBase();
+		cls.resetClassifier();
+	}
+
 	public void classifyTestData() {
-
+		cls.prepClassifier();
+		Map<Integer, Integer> testSet = db.dbGetTestSet();
+		String overview = "";
+		String genre = "";
+		for(Integer e : testSet.keySet()) {
+			overview = db.dbGetOverview(e);
+			genre = cls.classifyData(overview);
+			cls.setClassified(e, db.dbGetGenreID(genre));
+		}
+		
+	}
+	
+	public void archiveClassified() {
+		db.dbPopulateClassified(cls.getClassifiedData());
 	}
 
-	public void viewClassifiedData() {
-
-	}
 
 }

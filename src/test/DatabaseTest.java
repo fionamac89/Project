@@ -75,7 +75,7 @@ public class DatabaseTest {
 	public void testDbGetMoviesForGenre() {
 		genres = db.dbGetGenreList();
 		for(Integer id : genres) {
-			movies = db.dbGetMoviesForGenre(id);
+			//movies = db.dbGetMoviesForGenre(id);
 			//System.out.println(movies);
 		}
 
@@ -84,11 +84,11 @@ public class DatabaseTest {
 	@Test
 	public void testDbGetOverview() {
 		//movies = null;
-		movies = db.dbGetMoviesForGenre(12);
-		Map<Integer, String> overviews = db.dbGetOverview(movies);
-		for (Entry<Integer, String> e : overviews.entrySet()) {
-			System.out.println(e.getKey() + ": " + e.getValue());
-		}
+//		movies = db.dbGetMoviesForGenre(12);
+//		Map<Integer, String> overviews = db.dbGetOverview(movies);
+//		for (Entry<Integer, String> e : overviews.entrySet()) {
+//			System.out.println(e.getKey() + ": " + e.getValue());
+//		}
 	}
 
 	@Test
@@ -101,6 +101,12 @@ public class DatabaseTest {
 		// fail("Not yet implemented"); // TODO
 	}
 
+	@Test
+	public void testDbGetThesaurus() {
+		List<String> words = db.dbGetThesaurus(12);
+		System.out.println(words);
+	}
+	
 	@Test
 	public void testDbGetTrainingSet() {
 		// fail("Not yet implemented"); // TODO

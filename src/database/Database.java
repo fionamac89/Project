@@ -174,6 +174,37 @@ public class Database {
 
 		return genres;
 	}
+	
+	public Map<Integer, String> dbGetGenreListMap() {
+		PreparedStatement gpst = null;
+		ResultSet grs = null;
+		Map<Integer, String> genres = new HashMap<Integer, String>();
+		try {
+			gpst = con.prepareStatement("SELECT * FROM GenreTest");
+			grs = gpst.executeQuery();
+			while (grs.next()) {
+				genres.put(grs.getInt("ID"),grs.getString("Genre"));
+			}
+		} catch (SQLException ex) {
+			ex.printStackTrace();
+			Logger lgr = Logger.getLogger(Database.class.getName());
+			lgr.log(Level.SEVERE, ex.getMessage(), ex);
+		} finally {
+			try {
+				if (gpst != null) {
+					gpst.close();
+				}
+				if (grs != null) {
+					grs.close();
+				}
+			} catch (SQLException ex) {
+				Logger lgr = Logger.getLogger(Database.class.getName());
+				lgr.log(Level.WARNING, ex.getMessage(), ex);
+			}
+		}
+
+		return genres;
+	}
 
 	public void dbInsertGenre(Map<Long, String> genreMap) {
 		try {
@@ -307,10 +338,6 @@ public class Database {
 	}
 
 	/*
-	 * TODO: db query to create a new TestSet table
-	 */
-
-	/*
 	 * TODO: db query to populate TrainingSet table
 	 */
 	public void dbPopulateTrainingSet(List<Integer> training, int id) {
@@ -369,23 +396,25 @@ public class Database {
 	}
 
 	public Map<Integer, Integer> dbGetTrainingSet() {
+		PreparedStatement tpst = null;
+		ResultSet trs = null;
 		Map<Integer, Integer> training = new HashMap<Integer, Integer>();
 		try {
-			pst = con.prepareStatement("SELECT * FROM TrainingSet");
-			rs = pst.executeQuery();
-			while (rs.next()) {
-				training.put(rs.getInt("FilmID"), rs.getInt("GenreID"));
+			tpst = con.prepareStatement("SELECT * FROM TrainingSet");
+			trs = tpst.executeQuery();
+			while (trs.next()) {
+				training.put(trs.getInt("FilmID"), trs.getInt("GenreID"));
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
 			try {
-				if (pst != null) {
-					pst.close();
+				if (tpst != null) {
+					tpst.close();
 				}
-				if (rs != null) {
-					rs.close();
+				if (trs != null) {
+					trs.close();
 				}
 
 			} catch (SQLException ex) {
@@ -438,6 +467,74 @@ public class Database {
 				ppst.setInt(1, genreid);
 				ppst.setString(2, e.getKey());
 				ppst.setInt(3, e.getValue());
+				ppst.executeUpdate();
+			}
+
+		} catch (SQLException ex) {
+			Logger lgr = Logger.getLogger(Database.class.getName());
+			lgr.log(Level.SEVERE, ex.getMessage(), ex);
+
+		} finally {
+			try {
+				if (ppst != null) {
+					ppst.close();
+				}
+			} catch (SQLException ex) {
+				Logger lgr = Logger.getLogger(Database.class.getName());
+				lgr.log(Level.WARNING, ex.getMessage(), ex);
+			}
+		}
+	}
+	
+	/*
+	 *TODO: Get thesaurus? Get thesaurus for Genre? 
+	 */
+	
+	public List<String> dbGetThesaurus(int genreid) {
+		PreparedStatement tpst = null;
+		ResultSet trs = null;
+		List<String> entries = new ArrayList<String>();
+		try {
+			tpst = con.prepareStatement("SELECT Word FROM Thesaurus WHERE GenreID=?");
+			tpst.setInt(1, genreid);
+			trs = tpst.executeQuery();
+			while (trs.next()) {
+				entries.add(trs.getString("Word"));
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			try {
+				if (tpst != null) {
+					tpst.close();
+				}
+				if (trs != null) {
+					trs.close();
+				}
+
+			} catch (SQLException ex) {
+				Logger lgr = Logger.getLogger(Database.class.getName());
+				lgr.log(Level.WARNING, ex.getMessage(), ex);
+			}
+		}
+
+		
+		return entries;
+	}
+	
+	
+	/*
+	 * TODO: populate classified table
+	 */
+	public void dbPopulateClassified(Map<Integer, Integer> classified) {
+		PreparedStatement ppst = null;
+		try {
+			ppst = con
+					.prepareStatement("INSERT IGNORE INTO Classified_SW(FilmID, GenreID) VALUES (?,?)");
+			for(Entry<Integer, Integer> e : classified.entrySet()) {
+				ppst.setInt(1, e.getKey());
+				ppst.setInt(2, e.getValue());
 				ppst.executeUpdate();
 			}
 
