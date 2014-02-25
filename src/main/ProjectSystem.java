@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import jsonparser.Movie;
 import jsonparser.Parser;
@@ -107,13 +106,13 @@ public class ProjectSystem implements ISystem {
 	 * Not needed?
 	 */
 	public void createThesaurus(String name) {
-
+		db.dbCreateThesaurus(name);
 	}
 
 	// Alter this mechanism to do everything by Genre. May need new query to get
 	// all films from training set with GenreID
 
-	public void populateThesaurus() {
+	public void populateThesaurus(String name) {
 		tagger = new Tagger();
 		List<Integer> genres = db.dbGetGenreList();
 		List<Integer> films = null;
@@ -122,24 +121,28 @@ public class ProjectSystem implements ISystem {
 			films = db.dbGetMoviesForGenreTrainSet(genreid);
 			for (Integer filmid : films) {
 				overview = db.dbGetOverview(filmid);
-				tagger.removeStopWords(overview);
+				//tagger.setStopWordFilter(overview); //Change this line to change filter
+				tagger.setStemStopFilter(overview);
+				tagger.applyFilter();
 			}
-			db.dbPopulateThesaurus(tagger.getWords(), genreid);
+			db.dbPopulateThesaurus(tagger.getWords(), genreid, name);
 			System.out.println(genreid + ": " + tagger.getWords());
 			tagger.clearWords();
 		}
+		System.out.println("Thesaurus populated");
 	}
 
-	public void trainClassifier() {
+	public void trainClassifier(String name) {
 		Map<Integer, String> genreList = db.dbGetGenreListMap();
 		
 		for(Integer genreid : genreList.keySet()) {
-			List<String> wordsList = db.dbGetThesaurus(genreid);
+			List<String> wordsList = db.dbGetThesaurus(genreid, name);
 			cls.addToDataset(genreList.get(genreid), cls.readLines(wordsList));
 		}
 		cls.trainClassifier();
 		cls.setKnowledgeBase();
 		cls.resetClassifier();
+		System.out.println("Classifier Trained");
 	}
 
 	public void classifyTestData() {
@@ -149,14 +152,16 @@ public class ProjectSystem implements ISystem {
 		String genre = "";
 		for(Integer e : testSet.keySet()) {
 			overview = db.dbGetOverview(e);
-			genre = cls.classifyData(overview);
+			genre = cls.classifyData(tagger.stemFilter(overview));
 			cls.setClassified(e, db.dbGetGenreID(genre));
 		}
+		System.out.println("DataClassified");
 		
 	}
 	
-	public void archiveClassified() {
-		db.dbPopulateClassified(cls.getClassifiedData());
+	public void archiveClassified(String name) {
+		db.dbPopulateClassifiedSpecific(name, cls.getClassifiedData());
+		System.out.println("DB Populated");
 	}
 
 

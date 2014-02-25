@@ -10,6 +10,7 @@ import jsonparser.Movie;
 
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.core.StopFilter;
+import org.apache.lucene.analysis.en.PorterStemFilter;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
@@ -29,18 +30,35 @@ public class Tagger {
 	 * Stop word analysis
 	 */
 
-	public void removeStopWords(String content) {
-		// StringBuilder sb = new StringBuilder();
+	public void setStopWordFilter(String content) {
 		tokenStream = new StandardTokenizer(Version.LUCENE_46,
 				new StringReader(content));
 		tokenStream = new StopFilter(Version.LUCENE_46, tokenStream,
 				StandardAnalyzer.STOP_WORDS_SET);
+	}
+	
+	public void setStemStopFilter(String content) {
+		tokenStream = new StandardTokenizer(Version.LUCENE_46,
+				new StringReader(content));
+		tokenStream = new StopFilter(Version.LUCENE_46, tokenStream,
+				StandardAnalyzer.STOP_WORDS_SET);
+		tokenStream = new PorterStemFilter(tokenStream);
+	}
+	
+	public void setStemFilter(String content) {
+		tokenStream = new StandardTokenizer(Version.LUCENE_46,
+				new StringReader(content));
+		tokenStream = new PorterStemFilter(tokenStream);
+	}
+	
+	public void applyFilter() {
 		CharTermAttribute token = tokenStream
 				.addAttribute(CharTermAttribute.class);
 		try {
 			tokenStream.reset();
 			while (tokenStream.incrementToken()) {
 				output = token.toString();
+				//Add numeric check here?
 				if (output != null) {
 					termOccurrence(output.toLowerCase());
 				}
@@ -63,6 +81,33 @@ public class Tagger {
 			importantText.put(text, 1);
 		}
 
+	}
+	
+	//Apply stemming to text for when it is used for prediction
+	public String stemFilter(String content) {
+		StringBuilder sb = new StringBuilder();
+		tokenStream = new StandardTokenizer(Version.LUCENE_46,
+				new StringReader(content));
+		tokenStream = new PorterStemFilter(tokenStream);
+		
+		CharTermAttribute token = tokenStream
+				.addAttribute(CharTermAttribute.class);
+		try {
+			tokenStream.reset();
+			while (tokenStream.incrementToken()) {
+				output = token.toString();
+				//Add numeric check here?
+				if (output != null) {
+					sb.append(output+" ");
+				}
+			}
+			tokenStream.end();
+			tokenStream.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return sb.toString();
 	}
 	
 	public Map<String, Integer> getWords() {

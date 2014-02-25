@@ -1,8 +1,6 @@
 package test;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -16,7 +14,6 @@ public class DatabaseTest {
 
 	private static Database db = null;
 	private List<Integer> genres = null;
-	private List<Integer> movies = null;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -103,13 +100,23 @@ public class DatabaseTest {
 
 	@Test
 	public void testDbGetThesaurus() {
-		List<String> words = db.dbGetThesaurus(12);
-		System.out.println(words);
+		//List<String> words = db.dbGetThesaurus(12);
+		//System.out.println(words);
 	}
 	
 	@Test
 	public void testDbGetTrainingSet() {
 		// fail("Not yet implemented"); // TODO
+	}
+	
+	@Test
+	public void testDbCreateClassifiedTable() {
+		db.dbCreateClassifiedTable("Classified_SSW");
+	}
+	
+	@Test
+	public void testDbPopulateClassifiedSpecific() {
+		
 	}
 
 	@Test

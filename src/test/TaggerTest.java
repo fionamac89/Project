@@ -33,8 +33,8 @@ public class TaggerTest {
 
 	@Test
 	public void testRemoveStopWords() {
-		tagger.removeStopWords("The quick fox jumped over the quick brown dog.");
-		System.out.println(tagger.getWords());
+		//tagger.removeStopWords("The quick fox jumped over the quick brown dog.");
+		//System.out.println(tagger.getWords());
 	}
 
 	@Test
@@ -45,6 +45,11 @@ public class TaggerTest {
 	@Test
 	public void testGetWords() {
 		//fail("Not yet implemented"); // TODO
+	}
+	
+	@Test
+	public void testStemmer() {
+		System.out.println(tagger.stemFilter("The lazy fox jumped over the quick brown dog."));
 	}
 
 }

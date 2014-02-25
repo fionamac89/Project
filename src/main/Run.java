@@ -10,7 +10,14 @@ public class Run {
 		//system.addMovieList("/Users/Fiona/Dropbox/Strath Uni/Year 4/Project/Script Test/output3.txt");
 		/*Genre File: "/Users/Fiona/Dropbox/Strath Uni/Year 4/Project/Script Test/genres.txt"*/
 		//system.createTrainingSet(250);
-		system.populateThesaurus();
+		String thesName = "Thesaurus_SSW";
+		//system.createThesaurus(thesName);
+		system.populateThesaurus(thesName);
+		system.trainClassifier(thesName);
+		system.classifyTestData();
+		system.archiveClassified("Classified_SSW");
+		
+		
 	}
 
 }

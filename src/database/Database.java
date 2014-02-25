@@ -458,11 +458,13 @@ public class Database {
 	/*
 	 * TODO: populate thesaurus
 	 */
-	public void dbPopulateThesaurus(Map<String, Integer> thes, int genreid) {
+	public void dbPopulateThesaurus(Map<String, Integer> thes, int genreid, String name) {
 		PreparedStatement ppst = null;
+		String sql = "";
 		try {
+			sql = "INSERT IGNORE INTO "+name+"(GenreID, Word, Frequency) VALUES (?,?,?)";
 			ppst = con
-					.prepareStatement("INSERT IGNORE INTO Thesaurus(GenreID, Word, Frequency) VALUES (?,?,?)");
+					.prepareStatement(sql);
 			for(Entry<String, Integer> e : thes.entrySet()) {
 				ppst.setInt(1, genreid);
 				ppst.setString(2, e.getKey());
@@ -490,12 +492,14 @@ public class Database {
 	 *TODO: Get thesaurus? Get thesaurus for Genre? 
 	 */
 	
-	public List<String> dbGetThesaurus(int genreid) {
+	public List<String> dbGetThesaurus(int genreid, String name) {
 		PreparedStatement tpst = null;
 		ResultSet trs = null;
 		List<String> entries = new ArrayList<String>();
+		String sql = "";
 		try {
-			tpst = con.prepareStatement("SELECT Word FROM Thesaurus WHERE GenreID=?");
+			sql = "SELECT Word FROM "+name+" WHERE GenreID=?";
+			tpst = con.prepareStatement(sql);
 			tpst.setInt(1, genreid);
 			trs = tpst.executeQuery();
 			while (trs.next()) {
@@ -538,6 +542,80 @@ public class Database {
 				ppst.executeUpdate();
 			}
 
+		} catch (SQLException ex) {
+			Logger lgr = Logger.getLogger(Database.class.getName());
+			lgr.log(Level.SEVERE, ex.getMessage(), ex);
+
+		} finally {
+			try {
+				if (ppst != null) {
+					ppst.close();
+				}
+			} catch (SQLException ex) {
+				Logger lgr = Logger.getLogger(Database.class.getName());
+				lgr.log(Level.WARNING, ex.getMessage(), ex);
+			}
+		}
+	}
+	
+	public void dbPopulateClassifiedSpecific(String name, Map<Integer, Integer> classified) {
+		PreparedStatement ppst = null;
+		try {
+			String sql = "INSERT IGNORE INTO "+name+"(FilmID, GenreID) VALUES (?,?)";
+			System.out.println(sql);
+			ppst = con
+					.prepareStatement(sql);
+			for(Entry<Integer, Integer> e : classified.entrySet()) {
+				ppst.setInt(1, e.getKey());
+				ppst.setInt(2, e.getValue());
+				ppst.executeUpdate();
+			}
+
+		} catch (SQLException ex) {
+			Logger lgr = Logger.getLogger(Database.class.getName());
+			lgr.log(Level.SEVERE, ex.getMessage(), ex);
+		} finally {
+			try {
+				if (ppst != null) {
+					ppst.close();
+				}
+			} catch (SQLException ex) {
+				Logger lgr = Logger.getLogger(Database.class.getName());
+				lgr.log(Level.WARNING, ex.getMessage(), ex);
+			}
+		}
+	}
+	
+	public void dbCreateClassifiedTable(String name) {
+		PreparedStatement ppst = null;
+		try {
+			String sql = "CREATE TABLE "+name+"(FilmID INT(6) NOT NULL, GenreID INT(6) NOT NULL, FOREIGN KEY (FilmID) REFERENCES FilmList(ID), FOREIGN KEY (GenreID) REFERENCES GenreTest(ID));";
+			ppst = con
+					.prepareStatement(sql);
+			ppst.executeUpdate();
+		} catch (SQLException ex) {
+			Logger lgr = Logger.getLogger(Database.class.getName());
+			lgr.log(Level.SEVERE, ex.getMessage(), ex);
+
+		} finally {
+			try {
+				if (ppst != null) {
+					ppst.close();
+				}
+			} catch (SQLException ex) {
+				Logger lgr = Logger.getLogger(Database.class.getName());
+				lgr.log(Level.WARNING, ex.getMessage(), ex);
+			}
+		}
+	}
+	
+	public void dbCreateThesaurus(String name) {
+		PreparedStatement ppst = null;
+		try {
+			String sql = "CREATE TABLE "+name+"(GenreID INT(6) NOT NULL, Word VARCHAR(64) NOT NULL, Frequency INT(6) NOT NULL, FOREIGN KEY (GenreID) REFERENCES GenreTest(ID));";
+			ppst = con
+					.prepareStatement(sql);
+			ppst.executeUpdate();
 		} catch (SQLException ex) {
 			Logger lgr = Logger.getLogger(Database.class.getName());
 			lgr.log(Level.SEVERE, ex.getMessage(), ex);
