@@ -14,5 +14,6 @@ public interface ISystem {
 	public void populateThesaurus(String name);
 	public void trainClassifier(String name);
 	public void classifyTestData();
+	public void createClassified(String name);
 	public void archiveClassified(String name);
 }

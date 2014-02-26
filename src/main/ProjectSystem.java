@@ -121,8 +121,8 @@ public class ProjectSystem implements ISystem {
 			films = db.dbGetMoviesForGenreTrainSet(genreid);
 			for (Integer filmid : films) {
 				overview = db.dbGetOverview(filmid);
-				//tagger.setStopWordFilter(overview); //Change this line to change filter
-				tagger.setStemStopFilter(overview);
+				tagger.setStopWordFilter(overview); //Change this line to change filter
+				//tagger.setStemStopFilter(overview);
 				tagger.applyFilter();
 			}
 			db.dbPopulateThesaurus(tagger.getWords(), genreid, name);
@@ -152,11 +152,17 @@ public class ProjectSystem implements ISystem {
 		String genre = "";
 		for(Integer e : testSet.keySet()) {
 			overview = db.dbGetOverview(e);
-			genre = cls.classifyData(tagger.stemFilter(overview));
+			genre = cls.classifyData(overview);
 			cls.setClassified(e, db.dbGetGenreID(genre));
+			System.out.println(e);
 		}
 		System.out.println("DataClassified");
 		
+	}
+	
+	public void createClassified(String name) {
+		db.dbCreateClassifiedTable(name);
+		System.out.println("Classified Table Created");
 	}
 	
 	public void archiveClassified(String name) {

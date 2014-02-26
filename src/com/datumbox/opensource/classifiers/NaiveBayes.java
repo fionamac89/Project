@@ -134,7 +134,7 @@ public class NaiveBayes {
         FeatureStats stats = featureExtractor.extractFeatureStats(dataset); //extract the stats of the dataset
         
         //we pass this information to the feature selection algorithm and we get a list with the selected features
-        Map<String, Double> selectedFeatures = featureExtractor.chisquare(stats, chisquareCriticalValue);
+       /*Map<String, Double> selectedFeatures = featureExtractor.chisquare(stats, chisquareCriticalValue);
         
         //clip from the stats all the features that are not selected
         Iterator<Map.Entry<String, Map<String, Integer>>> it = stats.featureCategoryJointCount.entrySet().iterator();
@@ -145,7 +145,7 @@ public class NaiveBayes {
                 //if the feature is not in the selectedFeatures list remove it
                 it.remove();
             }
-        }
+        }*/
         
         return stats;
     }
