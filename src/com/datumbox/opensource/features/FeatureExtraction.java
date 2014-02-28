@@ -92,7 +92,7 @@ public class FeatureExtraction {
      * @param criticalLevel
      * @return 
      */
-    public Map<String, Double> chisquare(FeatureStats stats, double criticalLevel) {
+  /*  public Map<String, Double> chisquare(FeatureStats stats, double criticalLevel) {
         Map<String, Double> selectedFeatures = new HashMap<>();
         
         String feature;
@@ -137,6 +137,6 @@ public class FeatureExtraction {
         }
         
         return selectedFeatures;
-    }
-}
+    }*/
+} 
 

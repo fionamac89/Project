@@ -38,7 +38,7 @@ public class TextTokenizer {
      * @return 
      */
     public static String preprocess(String text) {
-        return text.replaceAll("\\p{P}", " ").replaceAll("\\s+", " ").toLowerCase(Locale.getDefault());
+        return text.replaceAll("\\p{P}", " ").replaceAll("\\s+", " ").toLowerCase(Locale.UK);
     }
     
     /**

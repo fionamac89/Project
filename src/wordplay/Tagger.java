@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import jsonparser.Movie;
@@ -51,6 +52,11 @@ public class Tagger {
 		tokenStream = new PorterStemFilter(tokenStream);
 	}
 	
+	public void setNoFilter(String content) {
+		tokenStream = new StandardTokenizer(Version.LUCENE_46,
+				new StringReader(content));
+	}
+	
 	public void applyFilter() {
 		CharTermAttribute token = tokenStream
 				.addAttribute(CharTermAttribute.class);
@@ -60,7 +66,7 @@ public class Tagger {
 				output = token.toString();
 				//Add numeric check here?
 				if (output != null) {
-					termOccurrence(output.toLowerCase());
+					termOccurrence(output.toLowerCase(Locale.UK).replaceAll("\\p{P}", ""));
 				}
 			}
 			tokenStream.end();

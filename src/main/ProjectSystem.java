@@ -113,7 +113,7 @@ public class ProjectSystem implements ISystem {
 	// all films from training set with GenreID
 
 	public void populateThesaurus(String name) {
-		tagger = new Tagger();
+		tagger = new Tagger(); //move this to constructor!!!!
 		List<Integer> genres = db.dbGetGenreList();
 		List<Integer> films = null;
 		String overview = "";
@@ -121,8 +121,10 @@ public class ProjectSystem implements ISystem {
 			films = db.dbGetMoviesForGenreTrainSet(genreid);
 			for (Integer filmid : films) {
 				overview = db.dbGetOverview(filmid);
-				tagger.setStopWordFilter(overview); //Change this line to change filter
+				//tagger.setStopWordFilter(overview); //Change this line to change filter
 				//tagger.setStemStopFilter(overview);
+				//tagger.setStemFilter(overview);
+				tagger.setNoFilter(overview);
 				tagger.applyFilter();
 			}
 			db.dbPopulateThesaurus(tagger.getWords(), genreid, name);
