@@ -4,7 +4,7 @@ package main;
 public class Run {
 
 	public static void main(String[] args) {		
-		ISystem system = new ProjectSystem();
+		ProjectSystem system = new ProjectSystem();
 		//system.addGenreList("/Users/Fiona/Dropbox/Strath Uni/Year 4/Project/Script Test/genres.txt");
 		/*Movie File: "/Users/Fiona/Dropbox/Strath Uni/Year 4/Project/Script Test/output3.txt"*/
 		//system.addMovieList("/Users/Fiona/Dropbox/Strath Uni/Year 4/Project/Script Test/output3.txt");
@@ -12,10 +12,12 @@ public class Run {
 		//system.createTrainingSet(250);
 		String thesName = "Thesaurus_SSW_NewSWList";
 		String className = "NFClassified_SSW_NewSWList";
-		system.setStopWords("./stopwords.txt");
-		system.createThesaurus(thesName);
-		system.populateThesaurus(thesName);
-		system.createClassified(className);
+		String suffix = "1000";
+		system.createTrainingSet(1000, suffix);
+		//system.setStopWords("./stopwords.txt");
+		//system.createThesaurus(thesName);
+		//system.populateThesaurus(thesName);
+		//system.createClassified(className);
 		//system.trainClassifier(thesName);
 		//system.classifyTestData();
 		//system.archiveClassified(className);

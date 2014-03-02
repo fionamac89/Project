@@ -271,13 +271,15 @@ public class Database {
 		return movies;
 	}
 
-	public List<Integer> dbGetMoviesForGenreTrainSet(int genre) {
+	public List<Integer> dbGetMoviesForGenreTrainSet(int genre, String suffix) {
 		PreparedStatement gpst = null;
 		ResultSet grs = null;
 		List<Integer> movies = new ArrayList<Integer>();
+		String sql = "";
 		try {
+			sql = "SELECT FilmID FROM TrainingSet"+suffix+" WHERE GenreID=?";
 			gpst = con
-					.prepareStatement("SELECT FilmID FROM TrainingSet WHERE GenreID=?");
+					.prepareStatement(sql);
 			gpst.setInt(1, genre);
 			grs = gpst.executeQuery();
 			while (grs.next()) {
@@ -340,10 +342,11 @@ public class Database {
 	/*
 	 * TODO: db query to populate TrainingSet table
 	 */
-	public void dbPopulateTrainingSet(List<Integer> training, int id) {
+	public void dbPopulateTrainingSet(List<Integer> training, int id, String suffix) {
 		try {
+			String sql = "INSERT IGNORE INTO TrainingSet"+suffix+"(FilmID, GenreID) VALUES(?,?)";
 			fgpst = con
-					.prepareStatement("INSERT IGNORE INTO TrainingSet(FilmID, GenreID) VALUES(?,?)");
+					.prepareStatement(sql);
 			for (Integer filmid : training) {
 				fgpst.setInt(1, filmid);
 				fgpst.setInt(2, id);
@@ -369,10 +372,11 @@ public class Database {
 	/*
 	 * TODO: db query to populate TestSet table
 	 */
-	public void dbPopulateTestSet(List<Integer> test, int id) {
+	public void dbPopulateTestSet(List<Integer> test, int id, String suffix) {
 		try {
+			String sql = "INSERT IGNORE INTO TestSet"+suffix+"(FilmID, GenreID) VALUES(?,?)";
 			pst = con
-					.prepareStatement("INSERT IGNORE INTO TestSet(FilmID, GenreID) VALUES(?,?)");
+					.prepareStatement(sql);
 			for (Integer filmid : test) {
 				pst.setInt(1, filmid);
 				pst.setInt(2, id);
@@ -395,12 +399,12 @@ public class Database {
 		}
 	}
 
-	public Map<Integer, Integer> dbGetTrainingSet() {
+	public Map<Integer, Integer> dbGetTrainingSet(String suffix) {
 		PreparedStatement tpst = null;
 		ResultSet trs = null;
 		Map<Integer, Integer> training = new HashMap<Integer, Integer>();
 		try {
-			tpst = con.prepareStatement("SELECT * FROM TrainingSet");
+			tpst = con.prepareStatement("SELECT * FROM TrainingSet"+suffix);
 			trs = tpst.executeQuery();
 			while (trs.next()) {
 				training.put(trs.getInt("FilmID"), trs.getInt("GenreID"));
@@ -426,10 +430,10 @@ public class Database {
 		return training;
 	}
 
-	public Map<Integer, Integer> dbGetTestSet() {
+	public Map<Integer, Integer> dbGetTestSet(String suffix) {
 		Map<Integer, Integer> test = new HashMap<Integer, Integer>();
 		try {
-			pst = con.prepareStatement("SELECT * FROM TestSet");
+			pst = con.prepareStatement("SELECT * FROM TestSet"+suffix);
 			rs = pst.executeQuery();
 			while (rs.next()) {
 				test.put(rs.getInt("FilmID"), rs.getInt("GenreID"));

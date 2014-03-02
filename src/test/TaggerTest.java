@@ -25,6 +25,7 @@ public class TaggerTest {
 
 	@Before
 	public void setUp() throws Exception {
+		tagger.createStopList("./stopwords.txt");
 	}
 
 	@After
@@ -44,12 +45,13 @@ public class TaggerTest {
 
 	@Test
 	public void testGetWords() {
-		//fail("Not yet implemented"); // TODO
+		tagger.setStemStopFilter("The quick fox jumped over a lazy c d z 123.");
+		tagger.applyFilter();
 	}
 	
 	@Test
 	public void testStemmer() {
-		System.out.println(tagger.stemFilter("The lazy fox jumped over the quick brown dog."));
+		//System.out.println(tagger.stemFilter("The lazy fox jumped over the quick brown dog."));
 	}
 
 }

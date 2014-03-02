@@ -15,7 +15,7 @@ import wordplay.Tagger;
 import classifier.Classifier;
 import database.Database;
 
-public class ProjectSystem implements ISystem {
+public class ProjectSystem {
 
 	private Database db = null;
 	private BufferedReader br = null;
@@ -79,7 +79,7 @@ public class ProjectSystem implements ISystem {
 		}
 	}
 
-	public void createTrainingSet(int size) {
+	public void createTrainingSet(int size, String suffix) {
 		List<Integer> genres = db.dbGetGenreList();
 		List<Integer> movies = null;
 		List<Integer> training = new ArrayList<Integer>();
@@ -92,15 +92,15 @@ public class ProjectSystem implements ISystem {
 				i++;
 			}
 			System.out.println(genreid + ": " + training.size());
-			db.dbPopulateTrainingSet(training, genreid);
-			createTestSet(movies, genreid);
+			db.dbPopulateTrainingSet(training, genreid, suffix);
+			createTestSet(movies, genreid, suffix);
 			training.clear();
 		}
 	}
 
-	public void createTestSet(List<Integer> movies, int genreid) {
+	public void createTestSet(List<Integer> movies, int genreid, String suffix) {
 		List<Integer> test = new ArrayList<Integer>(movies);
-		db.dbPopulateTestSet(test, genreid);
+		db.dbPopulateTestSet(test, genreid, suffix);
 	}
 
 	/*
@@ -118,12 +118,12 @@ public class ProjectSystem implements ISystem {
 	// Alter this mechanism to do everything by Genre. May need new query to get
 	// all films from training set with GenreID
 
-	public void populateThesaurus(String name) {
+	public void populateThesaurus(String name, String suffix) {
 		List<Integer> genres = db.dbGetGenreList();
 		List<Integer> films = null;
 		String overview = "";
 		for (Integer genreid : genres) {
-			films = db.dbGetMoviesForGenreTrainSet(genreid);
+			films = db.dbGetMoviesForGenreTrainSet(genreid, suffix);
 			for (Integer filmid : films) {
 				overview = db.dbGetOverview(filmid);
 				//tagger.setStopWordFilter(overview); //Change this line to change filter
@@ -152,9 +152,9 @@ public class ProjectSystem implements ISystem {
 		System.out.println("Classifier Trained");
 	}
 
-	public void classifyTestData() {
+	public void classifyTestData(String suffix) {
 		cls.prepClassifier();
-		Map<Integer, Integer> testSet = db.dbGetTestSet();
+		Map<Integer, Integer> testSet = db.dbGetTestSet(suffix);
 		String overview = "";
 		String genre = "";
 		for(Integer e : testSet.keySet()) {

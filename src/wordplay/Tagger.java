@@ -26,7 +26,7 @@ public class Tagger {
 	private String output = "";
 	private Map<String, Integer> importantText = null;
 	private List<String> stopwords = null;
-	private CharArraySet stopSet = null;
+	private Version luceneVersion = Version.LUCENE_46;
 
 	public Tagger() {
 		importantText = new HashMap<String, Integer>();
@@ -45,50 +45,44 @@ public class Tagger {
 			while (in.hasNext()) {
 				word = in.next().trim();
 				stopwords.add(word);
-				System.out.println(word);
+				//System.out.println(word);
 			}
+			
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
-		stopSet = StopFilter.makeStopSet(Version.LUCENE_46, stopwords);
+		//stopSet = StopFilter.makeStopSet(luceneVersion, stopwords);
+		//System.out.println(stopSet);
 
 	}
 
 	public void setStopWordFilter(String content) {
-		tokenStream = new StandardTokenizer(Version.LUCENE_46,
+		tokenStream = new StandardTokenizer(luceneVersion,
 				new StringReader(content));
-		if (stopSet != null) {
-			tokenStream = new StopFilter(Version.LUCENE_46, tokenStream,
-					stopSet);
-		} else {
-			tokenStream = new StopFilter(Version.LUCENE_46, tokenStream,
-					StandardAnalyzer.STOP_WORDS_SET);
-		}
+			tokenStream = new StopFilter(luceneVersion, tokenStream, StopFilter.makeStopSet(luceneVersion, stopwords));
+
 	}
 
 	public void setStemStopFilter(String content) {
-		tokenStream = new StandardTokenizer(Version.LUCENE_46,
+		tokenStream = new StandardTokenizer(luceneVersion,
 				new StringReader(content));
-		if (stopSet != null) {
-			tokenStream = new StopFilter(Version.LUCENE_46, tokenStream,
-					stopSet);
-		} else {
-			tokenStream = new StopFilter(Version.LUCENE_46, tokenStream,
-					StandardAnalyzer.STOP_WORDS_SET);
-		}
+			tokenStream = new StopFilter(luceneVersion, tokenStream,
+					StopFilter.makeStopSet(luceneVersion, stopwords));
+			//tokenStream = new StopFilter(luceneVersion, tokenStream, StandardAnalyzer.STOP_WORDS_SET);
+
 		tokenStream = new PorterStemFilter(tokenStream);
 	}
 
 	public void setStemFilter(String content) {
-		tokenStream = new StandardTokenizer(Version.LUCENE_46,
+		tokenStream = new StandardTokenizer(luceneVersion,
 				new StringReader(content));
 		tokenStream = new PorterStemFilter(tokenStream);
 	}
 
 	public void setNoFilter(String content) {
-		tokenStream = new StandardTokenizer(Version.LUCENE_46,
+		tokenStream = new StandardTokenizer(luceneVersion,
 				new StringReader(content));
 	}
 
@@ -101,8 +95,8 @@ public class Tagger {
 				output = token.toString();
 				// Add numeric check here?
 				if (output != null && !isNumeric(output)) {
-					termOccurrence(output.toLowerCase(Locale.UK).replaceAll(
-							"\\p{P}", ""));
+					termOccurrence(output.toLowerCase(Locale.UK).replaceAll("\\p{P}", ""));
+					//System.out.println(output.toLowerCase().replaceAll("\\p{P}", ""));
 				}
 			}
 			tokenStream.end();
@@ -128,7 +122,7 @@ public class Tagger {
 	// Apply stemming to text for when it is used for prediction
 	public String stemFilter(String content) {
 		StringBuilder sb = new StringBuilder();
-		tokenStream = new StandardTokenizer(Version.LUCENE_46,
+		tokenStream = new StandardTokenizer(luceneVersion,
 				new StringReader(content));
 		tokenStream = new PorterStemFilter(tokenStream);
 
