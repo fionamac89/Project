@@ -10,14 +10,16 @@ public class Run {
 		//system.addMovieList("/Users/Fiona/Dropbox/Strath Uni/Year 4/Project/Script Test/output3.txt");
 		/*Genre File: "/Users/Fiona/Dropbox/Strath Uni/Year 4/Project/Script Test/genres.txt"*/
 		//system.createTrainingSet(250);
-		String thesName = "Thesaurus_None";
-		String className = "NFClassified_None";
-		//system.createThesaurus(thesName);
+		String thesName = "Thesaurus_SSW_NewSWList";
+		String className = "NFClassified_SSW_NewSWList";
+		system.setStopWords("./stopwords.txt");
+		system.createThesaurus(thesName);
 		system.populateThesaurus(thesName);
-		//system.createClassified(className);
+		system.createClassified(className);
 		//system.trainClassifier(thesName);
 		//system.classifyTestData();
 		//system.archiveClassified(className);
+		
 		
 		
 	}

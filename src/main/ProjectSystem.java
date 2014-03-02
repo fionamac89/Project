@@ -32,6 +32,7 @@ public class ProjectSystem implements ISystem {
 		movie = new Movie();
 		genreMap = new HashMap<Long, String>();
 		cls = new Classifier();
+		tagger = new Tagger(); //move this to constructor!!!!
 	}
 
 	public void addMovie() {
@@ -109,11 +110,15 @@ public class ProjectSystem implements ISystem {
 		db.dbCreateThesaurus(name);
 	}
 
+	public void setStopWords(String filepath) {
+		tagger.createStopList(filepath);
+		System.out.println("StopList created");
+	}
+	
 	// Alter this mechanism to do everything by Genre. May need new query to get
 	// all films from training set with GenreID
 
 	public void populateThesaurus(String name) {
-		tagger = new Tagger(); //move this to constructor!!!!
 		List<Integer> genres = db.dbGetGenreList();
 		List<Integer> films = null;
 		String overview = "";
@@ -122,9 +127,9 @@ public class ProjectSystem implements ISystem {
 			for (Integer filmid : films) {
 				overview = db.dbGetOverview(filmid);
 				//tagger.setStopWordFilter(overview); //Change this line to change filter
-				//tagger.setStemStopFilter(overview);
+				tagger.setStemStopFilter(overview);
 				//tagger.setStemFilter(overview);
-				tagger.setNoFilter(overview);
+				//tagger.setNoFilter(overview);
 				tagger.applyFilter();
 			}
 			db.dbPopulateThesaurus(tagger.getWords(), genreid, name);
@@ -154,7 +159,7 @@ public class ProjectSystem implements ISystem {
 		String genre = "";
 		for(Integer e : testSet.keySet()) {
 			overview = db.dbGetOverview(e);
-			genre = cls.classifyData(overview);
+			genre = cls.classifyData(tagger.stemFilter(overview));
 			cls.setClassified(e, db.dbGetGenreID(genre));
 			System.out.println(e);
 		}

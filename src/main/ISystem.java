@@ -11,6 +11,7 @@ public interface ISystem {
 	public void createTrainingSet(int size);
 	public void createTestSet(List<Integer> movies, int id);
 	public void createThesaurus(String name);
+	public void setStopWords(String filepath);
 	public void populateThesaurus(String name);
 	public void trainClassifier(String name);
 	public void classifyTestData();
