@@ -12,12 +12,12 @@ public class Run {
 		//system.createTrainingSet(250);
 		String thesName = "Thesaurus_SSW_NewSWList";
 		String className = "NFClassified_SSW_NewSWList";
-		String suffix = "1000";
-		system.createTrainingSet(1000, suffix);
-		//system.setStopWords("./stopwords.txt");
+		String suffix = "250";
+		//system.createTrainingSet(1000, suffix);
+		system.setStopWords("./stopwords.txt");
 		//system.createThesaurus(thesName);
-		//system.populateThesaurus(thesName);
-		//system.createClassified(className);
+		system.populateThesaurus(thesName, suffix);
+		system.createClassified(className);
 		//system.trainClassifier(thesName);
 		//system.classifyTestData();
 		//system.archiveClassified(className);

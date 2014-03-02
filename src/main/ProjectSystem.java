@@ -32,7 +32,7 @@ public class ProjectSystem {
 		movie = new Movie();
 		genreMap = new HashMap<Long, String>();
 		cls = new Classifier();
-		tagger = new Tagger(); //move this to constructor!!!!
+		tagger = new Tagger();
 	}
 
 	public void addMovie() {
