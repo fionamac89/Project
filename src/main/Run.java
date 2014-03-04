@@ -14,14 +14,15 @@ public class Run {
 		String className = "NFClassified_SSW_NewSWList";
 		String suffix = "250";
 		//system.createTrainingSet(1000, suffix);
-		system.setStopWords("./stopwords.txt");
+		//system.setStopWords("./stopwords.txt");
 		//system.createThesaurus(thesName);
-		system.populateThesaurus(thesName, suffix);
-		system.createClassified(className);
+		//system.populateThesaurus(thesName, suffix);
+		//system.createClassified(className);
 		//system.trainClassifier(thesName);
 		//system.classifyTestData();
 		//system.archiveClassified(className);
 		
+		system.testDbConnect();
 		
 		
 	}

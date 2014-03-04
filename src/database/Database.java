@@ -1,6 +1,7 @@
 package database;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -19,11 +20,6 @@ import jsonparser.Movie;
 public class Database {
 
 	private Connection con = null;
-	private Statement st = null;
-	private ResultSet rs = null;
-	private PreparedStatement pst = null;
-	private PreparedStatement mpst = null;
-	private PreparedStatement fgpst = null;
 
 	public Database() {
 		dbConnect();
@@ -31,7 +27,7 @@ public class Database {
 
 	public void dbConnect() {
 		/*
-		 * Read this data in from (encrypted?) file for security?
+		 * test this connection at uni tomorrow
 		 */
 		String url = "jdbc:mysql://localhost:3306/fdb11130";
 		String user = "fdb11130";
@@ -47,27 +43,27 @@ public class Database {
 	}
 
 	public void dbInsertMovie(Movie movie) {
+		PreparedStatement pst = null;
 		long key = movie.getId();
-		int genreID = -1;
 		try {
-			mpst = con
+			pst = con
 					.prepareStatement("INSERT IGNORE INTO FilmList(ID, Title, Overview) VALUES(?,?,?)");
 
 			for (String genre : movie.getGenres()) {
 				// TODO finish getting genre ID and adding movie into DB.
-				mpst.setLong(1, key);
+				pst.setLong(1, key);
 				if (movie.getTitle().length() < 1) {
-					mpst.setString(2, movie.getOrigTitle());
+					pst.setString(2, movie.getOrigTitle());
 				} else {
-					mpst.setString(2, movie.getTitle());
+					pst.setString(2, movie.getTitle());
 				}
 				if (movie.getOverview().length() < 1) {
-					mpst.setString(3, null);
+					pst.setString(3, null);
 				} else {
-					mpst.setString(3, movie.getOverview());
+					pst.setString(3, movie.getOverview());
 				}
 
-				mpst.executeUpdate();
+				pst.executeUpdate();
 				dbCreateFGLink(movie, genre);
 			}
 		} catch (SQLException ex) {
@@ -76,8 +72,8 @@ public class Database {
 			ex.printStackTrace();
 		} finally {
 			try {
-				if (mpst != null) {
-					mpst.close();
+				if (pst != null) {
+					pst.close();
 				}
 
 			} catch (SQLException ex) {
@@ -90,13 +86,14 @@ public class Database {
 	}
 
 	public void dbCreateFGLink(Movie movie, String genre) {
+		PreparedStatement pst = null;
 		try {
-			fgpst = con
+			pst = con
 					.prepareStatement("INSERT IGNORE INTO FGLink(FilmID, GenreID) VALUES(?,?)");
-			fgpst.setLong(1, movie.getId());
+			pst.setLong(1, movie.getId());
 			int genreID = dbGetGenreID(genre);
-			fgpst.setInt(2, genreID);
-			fgpst.executeUpdate();
+			pst.setInt(2, genreID);
+			pst.executeUpdate();
 			System.out.println("Link created for " + genre);
 		} catch (SQLException ex) {
 			Logger lgr = Logger.getLogger(Database.class.getName());
@@ -104,8 +101,8 @@ public class Database {
 			ex.printStackTrace();
 		} finally {
 			try {
-				if (fgpst != null) {
-					fgpst.close();
+				if (pst != null) {
+					pst.close();
 				}
 
 			} catch (SQLException ex) {
@@ -117,6 +114,8 @@ public class Database {
 	}
 
 	public int dbGetGenreID(String genre) {
+		PreparedStatement pst = null;
+		ResultSet rs = null;
 		int num = -1;
 		try {
 			pst = con
@@ -150,6 +149,8 @@ public class Database {
 	}
 
 	public List<Integer> dbGetGenreList() {
+		PreparedStatement pst = null;
+		ResultSet rs = null;
 		List<Integer> genres = new ArrayList<Integer>();
 		try {
 			pst = con.prepareStatement("SELECT ID FROM GenreTest");
@@ -166,6 +167,9 @@ public class Database {
 				if (pst != null) {
 					pst.close();
 				}
+				if(rs != null) {
+					rs.close();
+				}
 			} catch (SQLException ex) {
 				Logger lgr = Logger.getLogger(Database.class.getName());
 				lgr.log(Level.WARNING, ex.getMessage(), ex);
@@ -174,16 +178,16 @@ public class Database {
 
 		return genres;
 	}
-	
+
 	public Map<Integer, String> dbGetGenreListMap() {
-		PreparedStatement gpst = null;
-		ResultSet grs = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
 		Map<Integer, String> genres = new HashMap<Integer, String>();
 		try {
-			gpst = con.prepareStatement("SELECT * FROM GenreTest");
-			grs = gpst.executeQuery();
-			while (grs.next()) {
-				genres.put(grs.getInt("ID"),grs.getString("Genre"));
+			pst = con.prepareStatement("SELECT * FROM GenreTest");
+			rs = pst.executeQuery();
+			while (rs.next()) {
+				genres.put(rs.getInt("ID"), rs.getString("Genre"));
 			}
 		} catch (SQLException ex) {
 			ex.printStackTrace();
@@ -191,11 +195,11 @@ public class Database {
 			lgr.log(Level.SEVERE, ex.getMessage(), ex);
 		} finally {
 			try {
-				if (gpst != null) {
-					gpst.close();
+				if (pst != null) {
+					pst.close();
 				}
-				if (grs != null) {
-					grs.close();
+				if (rs != null) {
+					rs.close();
 				}
 			} catch (SQLException ex) {
 				Logger lgr = Logger.getLogger(Database.class.getName());
@@ -207,6 +211,7 @@ public class Database {
 	}
 
 	public void dbInsertGenre(Map<Long, String> genreMap) {
+		PreparedStatement pst = null;
 		try {
 			pst = con
 					.prepareStatement("INSERT IGNORE INTO GenreTest(ID, Genre) VALUES(?,?)");
@@ -239,27 +244,27 @@ public class Database {
 	 * TODO: db query to extract all films with specific genre ID
 	 */
 	public List<Integer> dbGetMoviesForGenre(int genre) {
-		PreparedStatement gpst = null;
-		ResultSet grs = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
 		List<Integer> movies = new ArrayList<Integer>();
 		try {
-			gpst = con
+			pst = con
 					.prepareStatement("SELECT FilmID FROM FGLink WHERE GenreID=?");
-			gpst.setInt(1, genre);
-			grs = gpst.executeQuery();
-			while (grs.next()) {
-				movies.add(grs.getInt("FilmID"));
+			pst.setInt(1, genre);
+			rs = pst.executeQuery();
+			while (rs.next()) {
+				movies.add(rs.getInt("FilmID"));
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
 			try {
-				if (gpst != null) {
-					gpst.close();
+				if (pst != null) {
+					pst.close();
 				}
-				if (grs != null) {
-					grs.close();
+				if (rs != null) {
+					rs.close();
 				}
 
 			} catch (SQLException ex) {
@@ -272,29 +277,29 @@ public class Database {
 	}
 
 	public List<Integer> dbGetMoviesForGenreTrainSet(int genre, String suffix) {
-		PreparedStatement gpst = null;
-		ResultSet grs = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
 		List<Integer> movies = new ArrayList<Integer>();
 		String sql = "";
 		try {
-			sql = "SELECT FilmID FROM TrainingSet"+suffix+" WHERE GenreID=?";
-			gpst = con
-					.prepareStatement(sql);
-			gpst.setInt(1, genre);
-			grs = gpst.executeQuery();
-			while (grs.next()) {
-				movies.add(grs.getInt("FilmID"));
+			sql = "SELECT FilmID FROM TrainingSet" + suffix
+					+ " WHERE GenreID=?";
+			pst = con.prepareStatement(sql);
+			pst.setInt(1, genre);
+			rs = pst.executeQuery();
+			while (rs.next()) {
+				movies.add(rs.getInt("FilmID"));
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
 			try {
-				if (gpst != null) {
-					gpst.close();
+				if (pst != null) {
+					pst.close();
 				}
-				if (grs != null) {
-					grs.close();
+				if (rs != null) {
+					rs.close();
 				}
 
 			} catch (SQLException ex) {
@@ -305,20 +310,22 @@ public class Database {
 
 		return movies;
 	}
-	
+
 	/*
 	 * TODO: db query to extract the overview of all films given their IDs
 	 */
 	public String dbGetOverview(int filmid) {
+		PreparedStatement pst = null;
+		ResultSet rs = null;
 		String overview = "";
 		try {
 			pst = con
 					.prepareStatement("SELECT Overview FROM FilmList WHERE ID=?");
-				pst.setInt(1, filmid);
-				rs = pst.executeQuery();
-				while (rs.next()) {
-					overview = rs.getString("Overview");
-				}
+			pst.setInt(1, filmid);
+			rs = pst.executeQuery();
+			while (rs.next()) {
+				overview = rs.getString("Overview");
+			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -342,15 +349,17 @@ public class Database {
 	/*
 	 * TODO: db query to populate TrainingSet table
 	 */
-	public void dbPopulateTrainingSet(List<Integer> training, int id, String suffix) {
+	public void dbPopulateTrainingSet(List<Integer> training, int id,
+			String suffix) {
+		PreparedStatement pst = null;
 		try {
-			String sql = "INSERT IGNORE INTO TrainingSet"+suffix+"(FilmID, GenreID) VALUES(?,?)";
-			fgpst = con
-					.prepareStatement(sql);
+			String sql = "INSERT IGNORE INTO TrainingSet" + suffix
+					+ "(FilmID, GenreID) VALUES(?,?)";
+			pst = con.prepareStatement(sql);
 			for (Integer filmid : training) {
-				fgpst.setInt(1, filmid);
-				fgpst.setInt(2, id);
-				fgpst.executeUpdate();
+				pst.setInt(1, filmid);
+				pst.setInt(2, id);
+				pst.executeUpdate();
 			}
 		} catch (SQLException ex) {
 			Logger lgr = Logger.getLogger(Database.class.getName());
@@ -358,8 +367,8 @@ public class Database {
 			ex.printStackTrace();
 		} finally {
 			try {
-				if (fgpst != null) {
-					fgpst.close();
+				if (pst != null) {
+					pst.close();
 				}
 
 			} catch (SQLException ex) {
@@ -373,10 +382,11 @@ public class Database {
 	 * TODO: db query to populate TestSet table
 	 */
 	public void dbPopulateTestSet(List<Integer> test, int id, String suffix) {
+		PreparedStatement pst = null;
 		try {
-			String sql = "INSERT IGNORE INTO TestSet"+suffix+"(FilmID, GenreID) VALUES(?,?)";
-			pst = con
-					.prepareStatement(sql);
+			String sql = "INSERT IGNORE INTO TestSet" + suffix
+					+ "(FilmID, GenreID) VALUES(?,?)";
+			pst = con.prepareStatement(sql);
 			for (Integer filmid : test) {
 				pst.setInt(1, filmid);
 				pst.setInt(2, id);
@@ -400,25 +410,25 @@ public class Database {
 	}
 
 	public Map<Integer, Integer> dbGetTrainingSet(String suffix) {
-		PreparedStatement tpst = null;
-		ResultSet trs = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
 		Map<Integer, Integer> training = new HashMap<Integer, Integer>();
 		try {
-			tpst = con.prepareStatement("SELECT * FROM TrainingSet"+suffix);
-			trs = tpst.executeQuery();
-			while (trs.next()) {
-				training.put(trs.getInt("FilmID"), trs.getInt("GenreID"));
+			pst = con.prepareStatement("SELECT * FROM TrainingSet" + suffix);
+			rs = pst.executeQuery();
+			while (rs.next()) {
+				training.put(rs.getInt("FilmID"), rs.getInt("GenreID"));
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
 			try {
-				if (tpst != null) {
-					tpst.close();
+				if (pst != null) {
+					pst.close();
 				}
-				if (trs != null) {
-					trs.close();
+				if (rs != null) {
+					rs.close();
 				}
 
 			} catch (SQLException ex) {
@@ -431,9 +441,11 @@ public class Database {
 	}
 
 	public Map<Integer, Integer> dbGetTestSet(String suffix) {
+		PreparedStatement pst = null;
+		ResultSet rs = null;
 		Map<Integer, Integer> test = new HashMap<Integer, Integer>();
 		try {
-			pst = con.prepareStatement("SELECT * FROM TestSet"+suffix);
+			pst = con.prepareStatement("SELECT * FROM TestSet" + suffix);
 			rs = pst.executeQuery();
 			while (rs.next()) {
 				test.put(rs.getInt("FilmID"), rs.getInt("GenreID"));
@@ -462,18 +474,19 @@ public class Database {
 	/*
 	 * TODO: populate thesaurus
 	 */
-	public void dbPopulateThesaurus(Map<String, Integer> thes, int genreid, String name) {
-		PreparedStatement ppst = null;
+	public void dbPopulateThesaurus(Map<String, Integer> thes, int genreid,
+			String name) {
+		PreparedStatement pst = null;
 		String sql = "";
 		try {
-			sql = "INSERT IGNORE INTO "+name+"(GenreID, Word, Frequency) VALUES (?,?,?)";
-			ppst = con
-					.prepareStatement(sql);
-			for(Entry<String, Integer> e : thes.entrySet()) {
-				ppst.setInt(1, genreid);
-				ppst.setString(2, e.getKey());
-				ppst.setInt(3, e.getValue());
-				ppst.executeUpdate();
+			sql = "INSERT IGNORE INTO " + name
+					+ "(GenreID, Word, Frequency) VALUES (?,?,?)";
+			pst = con.prepareStatement(sql);
+			for (Entry<String, Integer> e : thes.entrySet()) {
+				pst.setInt(1, genreid);
+				pst.setString(2, e.getKey());
+				pst.setInt(3, e.getValue());
+				pst.executeUpdate();
 			}
 
 		} catch (SQLException ex) {
@@ -482,8 +495,8 @@ public class Database {
 
 		} finally {
 			try {
-				if (ppst != null) {
-					ppst.close();
+				if (pst != null) {
+					pst.close();
 				}
 			} catch (SQLException ex) {
 				Logger lgr = Logger.getLogger(Database.class.getName());
@@ -491,34 +504,34 @@ public class Database {
 			}
 		}
 	}
-	
+
 	/*
-	 *TODO: Get thesaurus? Get thesaurus for Genre? 
+	 * TODO: Get thesaurus? Get thesaurus for Genre?
 	 */
-	
+
 	public List<String> dbGetThesaurus(int genreid, String name) {
-		PreparedStatement tpst = null;
-		ResultSet trs = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
 		List<String> entries = new ArrayList<String>();
 		String sql = "";
 		try {
-			sql = "SELECT Word FROM "+name+" WHERE GenreID=?";
-			tpst = con.prepareStatement(sql);
-			tpst.setInt(1, genreid);
-			trs = tpst.executeQuery();
-			while (trs.next()) {
-				entries.add(trs.getString("Word"));
+			sql = "SELECT Word FROM " + name + " WHERE GenreID=?";
+			pst = con.prepareStatement(sql);
+			pst.setInt(1, genreid);
+			rs = pst.executeQuery();
+			while (rs.next()) {
+				entries.add(rs.getString("Word"));
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
 			try {
-				if (tpst != null) {
-					tpst.close();
+				if (pst != null) {
+					pst.close();
 				}
-				if (trs != null) {
-					trs.close();
+				if (rs != null) {
+					rs.close();
 				}
 
 			} catch (SQLException ex) {
@@ -527,23 +540,21 @@ public class Database {
 			}
 		}
 
-		
 		return entries;
 	}
-	
-	
+
 	/*
 	 * TODO: populate classified table
 	 */
 	public void dbPopulateClassified(Map<Integer, Integer> classified) {
-		PreparedStatement ppst = null;
+		PreparedStatement pst = null;
 		try {
-			ppst = con
+			pst = con
 					.prepareStatement("INSERT IGNORE INTO Classified_SW(FilmID, GenreID) VALUES (?,?)");
-			for(Entry<Integer, Integer> e : classified.entrySet()) {
-				ppst.setInt(1, e.getKey());
-				ppst.setInt(2, e.getValue());
-				ppst.executeUpdate();
+			for (Entry<Integer, Integer> e : classified.entrySet()) {
+				pst.setInt(1, e.getKey());
+				pst.setInt(2, e.getValue());
+				pst.executeUpdate();
 			}
 
 		} catch (SQLException ex) {
@@ -552,8 +563,8 @@ public class Database {
 
 		} finally {
 			try {
-				if (ppst != null) {
-					ppst.close();
+				if (pst != null) {
+					pst.close();
 				}
 			} catch (SQLException ex) {
 				Logger lgr = Logger.getLogger(Database.class.getName());
@@ -561,18 +572,19 @@ public class Database {
 			}
 		}
 	}
-	
-	public void dbPopulateClassifiedSpecific(String name, Map<Integer, Integer> classified) {
-		PreparedStatement ppst = null;
+
+	public void dbPopulateClassifiedSpecific(String name,
+			Map<Integer, Integer> classified) {
+		PreparedStatement pst = null;
 		try {
-			String sql = "INSERT IGNORE INTO "+name+"(FilmID, GenreID) VALUES (?,?)";
+			String sql = "INSERT IGNORE INTO " + name
+					+ "(FilmID, GenreID) VALUES (?,?)";
 			System.out.println(sql);
-			ppst = con
-					.prepareStatement(sql);
-			for(Entry<Integer, Integer> e : classified.entrySet()) {
-				ppst.setInt(1, e.getKey());
-				ppst.setInt(2, e.getValue());
-				ppst.executeUpdate();
+			pst = con.prepareStatement(sql);
+			for (Entry<Integer, Integer> e : classified.entrySet()) {
+				pst.setInt(1, e.getKey());
+				pst.setInt(2, e.getValue());
+				pst.executeUpdate();
 			}
 
 		} catch (SQLException ex) {
@@ -580,8 +592,8 @@ public class Database {
 			lgr.log(Level.SEVERE, ex.getMessage(), ex);
 		} finally {
 			try {
-				if (ppst != null) {
-					ppst.close();
+				if (pst != null) {
+					pst.close();
 				}
 			} catch (SQLException ex) {
 				Logger lgr = Logger.getLogger(Database.class.getName());
@@ -589,22 +601,23 @@ public class Database {
 			}
 		}
 	}
-	
+
 	public void dbCreateClassifiedTable(String name) {
-		PreparedStatement ppst = null;
+		PreparedStatement pst = null;
 		try {
-			String sql = "CREATE TABLE "+name+"(FilmID INT(6) NOT NULL, GenreID INT(6) NOT NULL, FOREIGN KEY (FilmID) REFERENCES FilmList(ID), FOREIGN KEY (GenreID) REFERENCES GenreTest(ID));";
-			ppst = con
-					.prepareStatement(sql);
-			ppst.executeUpdate();
+			String sql = "CREATE TABLE "
+					+ name
+					+ "(FilmID INT(6) NOT NULL, GenreID INT(6) NOT NULL, FOREIGN KEY (FilmID) REFERENCES FilmList(ID), FOREIGN KEY (GenreID) REFERENCES GenreTest(ID));";
+			pst = con.prepareStatement(sql);
+			pst.executeUpdate();
 		} catch (SQLException ex) {
 			Logger lgr = Logger.getLogger(Database.class.getName());
 			lgr.log(Level.SEVERE, ex.getMessage(), ex);
 
 		} finally {
 			try {
-				if (ppst != null) {
-					ppst.close();
+				if (pst != null) {
+					pst.close();
 				}
 			} catch (SQLException ex) {
 				Logger lgr = Logger.getLogger(Database.class.getName());
@@ -612,22 +625,23 @@ public class Database {
 			}
 		}
 	}
-	
+
 	public void dbCreateThesaurus(String name) {
-		PreparedStatement ppst = null;
+		PreparedStatement pst = null;
 		try {
-			String sql = "CREATE TABLE "+name+"(GenreID INT(6) NOT NULL, Word VARCHAR(64) NOT NULL, Frequency INT(6) NOT NULL, FOREIGN KEY (GenreID) REFERENCES GenreTest(ID));";
-			ppst = con
-					.prepareStatement(sql);
-			ppst.executeUpdate();
+			String sql = "CREATE TABLE "
+					+ name
+					+ "(GenreID INT(6) NOT NULL, Word VARCHAR(64) NOT NULL, Frequency INT(6) NOT NULL, FOREIGN KEY (GenreID) REFERENCES GenreTest(ID));";
+			pst = con.prepareStatement(sql);
+			pst.executeUpdate();
 		} catch (SQLException ex) {
 			Logger lgr = Logger.getLogger(Database.class.getName());
 			lgr.log(Level.SEVERE, ex.getMessage(), ex);
 
 		} finally {
 			try {
-				if (ppst != null) {
-					ppst.close();
+				if (pst != null) {
+					pst.close();
 				}
 			} catch (SQLException ex) {
 				Logger lgr = Logger.getLogger(Database.class.getName());
@@ -637,6 +651,7 @@ public class Database {
 	}
 
 	public void dbDeleteMovies() {
+		Statement st = null;
 		try {
 			st = con.createStatement();
 			st.execute("DELETE FROM FilmList");
@@ -662,24 +677,37 @@ public class Database {
 			if (con != null) {
 				con.close();
 			}
-			if (st != null) {
-				st.close();
-			}
-			if (rs != null) {
-				rs.close();
-			}
-			if (pst != null) {
-				pst.close();
-			}
-			if (mpst != null) {
-				mpst.close();
-			}
-			if (fgpst != null) {
-				fgpst.close();
-			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	public boolean tableExists(String name) {
+		boolean exists = false;
+		DatabaseMetaData dbm;
+		ResultSet tables = null;
+		try {
+			dbm = con.getMetaData();
+			tables = dbm.getTables(null, null, name, null);
+			if (tables.next()) {
+				exists = true;
+			}
+
+		} catch (SQLException ex) {
+			Logger lgr = Logger.getLogger(Database.class.getName());
+			lgr.log(Level.SEVERE, ex.getMessage(), ex);
+
+		} finally {
+			try {
+				if (tables != null) {
+					tables.close();
+				}
+			} catch (SQLException ex) {
+				Logger lgr = Logger.getLogger(Database.class.getName());
+				lgr.log(Level.WARNING, ex.getMessage(), ex);
+			}
+		}
+		return exists;
 	}
 }

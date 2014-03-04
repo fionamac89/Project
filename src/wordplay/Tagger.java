@@ -27,6 +27,7 @@ public class Tagger {
 	private Map<String, Integer> importantText = null;
 	private List<String> stopwords = null;
 	private Version luceneVersion = Version.LUCENE_46;
+	private boolean defaultList = true;
 
 	public Tagger() {
 		importantText = new HashMap<String, Integer>();
@@ -45,45 +46,69 @@ public class Tagger {
 			while (in.hasNext()) {
 				word = in.next().trim();
 				stopwords.add(word);
-				//System.out.println(word);
 			}
-			
+
+			defaultList = false;
+
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
-		//stopSet = StopFilter.makeStopSet(luceneVersion, stopwords);
-		//System.out.println(stopSet);
+	}
 
+	public void setFilter(String content, String filter) {
+		switch (filter) {
+		case "sw":
+			setStopWordFilter(content);
+			break;
+		case "s":
+			setStemFilter(content);
+			break;
+		case "ssw":
+			setStemStopFilter(content);
+			break;
+		case "none":
+		default:
+			setNoFilter(content);
+		}
 	}
 
 	public void setStopWordFilter(String content) {
-		tokenStream = new StandardTokenizer(luceneVersion,
-				new StringReader(content));
-			tokenStream = new StopFilter(luceneVersion, tokenStream, StopFilter.makeStopSet(luceneVersion, stopwords));
-
+		tokenStream = new StandardTokenizer(luceneVersion, new StringReader(
+				content));
+		if (defaultList) {
+			tokenStream = new StopFilter(luceneVersion, tokenStream,
+					StandardAnalyzer.STOP_WORDS_SET);
+		} else {
+			tokenStream = new StopFilter(luceneVersion, tokenStream,
+					StopFilter.makeStopSet(luceneVersion, stopwords));
+		}
 	}
 
 	public void setStemStopFilter(String content) {
-		tokenStream = new StandardTokenizer(luceneVersion,
-				new StringReader(content));
+		tokenStream = new StandardTokenizer(luceneVersion, new StringReader(
+				content));
+		if (defaultList) {
+			tokenStream = new StopFilter(luceneVersion, tokenStream,
+					StandardAnalyzer.STOP_WORDS_SET);
+		} else {
 			tokenStream = new StopFilter(luceneVersion, tokenStream,
 					StopFilter.makeStopSet(luceneVersion, stopwords));
-			//tokenStream = new StopFilter(luceneVersion, tokenStream, StandardAnalyzer.STOP_WORDS_SET);
+		}
 
 		tokenStream = new PorterStemFilter(tokenStream);
 	}
 
 	public void setStemFilter(String content) {
-		tokenStream = new StandardTokenizer(luceneVersion,
-				new StringReader(content));
+		tokenStream = new StandardTokenizer(luceneVersion, new StringReader(
+				content));
 		tokenStream = new PorterStemFilter(tokenStream);
 	}
 
 	public void setNoFilter(String content) {
-		tokenStream = new StandardTokenizer(luceneVersion,
-				new StringReader(content));
+		tokenStream = new StandardTokenizer(luceneVersion, new StringReader(
+				content));
 	}
 
 	public void applyFilter() {
@@ -93,10 +118,9 @@ public class Tagger {
 			tokenStream.reset();
 			while (tokenStream.incrementToken()) {
 				output = token.toString();
-				// Add numeric check here?
 				if (output != null && !isNumeric(output)) {
-					termOccurrence(output.toLowerCase(Locale.UK).replaceAll("\\p{P}", ""));
-					//System.out.println(output.toLowerCase().replaceAll("\\p{P}", ""));
+					termOccurrence(output.toLowerCase(Locale.UK).replaceAll(
+							"\\p{P}", ""));
 				}
 			}
 			tokenStream.end();
@@ -122,8 +146,8 @@ public class Tagger {
 	// Apply stemming to text for when it is used for prediction
 	public String stemFilter(String content) {
 		StringBuilder sb = new StringBuilder();
-		tokenStream = new StandardTokenizer(luceneVersion,
-				new StringReader(content));
+		tokenStream = new StandardTokenizer(luceneVersion, new StringReader(
+				content));
 		tokenStream = new PorterStemFilter(tokenStream);
 
 		CharTermAttribute token = tokenStream
@@ -153,18 +177,14 @@ public class Tagger {
 	public void clearWords() {
 		importantText.clear();
 	}
-	
-	public static boolean isNumeric(String str)  
-	{  
-	  try  
-	  {  
-	    double d = Double.parseDouble(str);
-	    int i = Integer.parseInt(str);
-	  }  
-	  catch(NumberFormatException nfe)  
-	  {  
-	    return false;  
-	  }  
-	  return true;  
+
+	public static boolean isNumeric(String str) {
+		try {
+			double d = Double.parseDouble(str);
+			int i = Integer.parseInt(str);
+		} catch (NumberFormatException nfe) {
+			return false;
+		}
+		return true;
 	}
 }

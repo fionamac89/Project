@@ -15,7 +15,7 @@ import wordplay.Tagger;
 import classifier.Classifier;
 import database.Database;
 
-public class ProjectSystem {
+public class ProjectSystem implements ISystem {
 
 	private Database db = null;
 	private BufferedReader br = null;
@@ -35,6 +35,10 @@ public class ProjectSystem {
 		tagger = new Tagger();
 	}
 
+	public void testDbConnect() {
+		db.dbConnect();
+	}
+	
 	public void addMovie() {
 
 	}
@@ -118,7 +122,7 @@ public class ProjectSystem {
 	// Alter this mechanism to do everything by Genre. May need new query to get
 	// all films from training set with GenreID
 
-	public void populateThesaurus(String name, String suffix) {
+	public void populateThesaurus(String filter, String name, String suffix) {
 		List<Integer> genres = db.dbGetGenreList();
 		List<Integer> films = null;
 		String overview = "";
@@ -127,9 +131,10 @@ public class ProjectSystem {
 			for (Integer filmid : films) {
 				overview = db.dbGetOverview(filmid);
 				//tagger.setStopWordFilter(overview); //Change this line to change filter
-				tagger.setStemStopFilter(overview);
+				//tagger.setStemStopFilter(overview);
 				//tagger.setStemFilter(overview);
 				//tagger.setNoFilter(overview);
+				tagger.setFilter(overview, filter);
 				tagger.applyFilter();
 			}
 			db.dbPopulateThesaurus(tagger.getWords(), genreid, name);
