@@ -19,7 +19,7 @@ public class Run {
 		//system.populateThesaurus(thesName, suffix);
 		//system.createClassified(className);
 		//system.trainClassifier(thesName);
-		//system.classifyTestData();
+		//system.classifyTestData(suffix);
 		//system.archiveClassified(className);
 		
 		system.testDbConnect();

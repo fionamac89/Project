@@ -20,22 +20,23 @@ import jsonparser.Movie;
 public class Database {
 
 	private Connection con = null;
+	private String url = "";
 
-	public Database() {
+	public Database(String url) {
+		this.url = url;
 		dbConnect();
 	}
 
 	public void dbConnect() {
 		/*
-		 * test this connection at uni tomorrow
+		 * test this connection on a uni pc
 		 */
-		String url = "jdbc:mysql://localhost:3306/fdb11130";
 		String user = "fdb11130";
 		String password = "rigulatn";
 
 		try {
 
-			this.con = DriverManager.getConnection(url, user, password);
+			this.con = DriverManager.getConnection(this.url, user, password);
 
 		} catch (SQLException e) {
 			e.printStackTrace();
