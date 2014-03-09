@@ -1,6 +1,5 @@
 package main;
 
-import java.util.List;
 
 public interface ISystem {
 
@@ -9,7 +8,6 @@ public interface ISystem {
 	public void addGenre();
 	public void addGenreList(String filepath);
 	public void createTrainingSet(int size, String suffix);
-	public void createTestSet(List<Integer> movies, int id, String suffix);
 	public void createThesaurus(String name);
 	public void setStopWords(String filepath);
 	public void populateThesaurus(String filter, String name, String suffix);

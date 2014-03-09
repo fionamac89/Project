@@ -5,15 +5,12 @@ import java.util.List;
 
 public class Movie {
 	private List<String> genres = null;
-	private List<String> keywords = null; //may not use
 	private String title = "";
 	private long id = 0;
 	private String overview = "";
-	private String origTitle = ""; //may not be needed
 	
 	public Movie() {
 		this.genres = new ArrayList<String>();
-		this.keywords = new ArrayList<String>(); //may not use
 	}
 
 	public List<String> getGenres() {
@@ -22,16 +19,6 @@ public class Movie {
 
 	public void setGenres(String genre) {
 		this.genres.add(genre);
-	}
-
-	//may not use
-	public List<String> getKeywords() {
-		return keywords;
-	}
-
-	//may not use
-	public void setKeywords(String keyword) {
-		this.keywords.add(keyword);
 	}
 
 	public String getTitle() {
@@ -56,25 +43,6 @@ public class Movie {
 
 	public void setOverview(String overview) {
 		this.overview = overview;
-	}
-	
-	//may not be needed
-	public String getOrigTitle() {
-		return origTitle;
-	}
-
-	//may not be needed
-	public void setOrigTitle(String origTitle) {
-		this.origTitle = origTitle;
-	}
-
-	//may not be needed
-	public String listToString(List<String> list) {
-	    StringBuilder result = new StringBuilder();
-	    for (String value : list) {
-	      result.append(value+"\t");
-	    } 
-	    return result.toString();
 	}
 	
 }

@@ -78,8 +78,7 @@ public class Classifier {
 	}
 	
 	public String classifyData(String overview) {
-		String output = nb.predict(overview);
-		return output;
+		return nb.predict(overview);	
 	}
 	
 	public void setClassified(int filmid, int genreid) {

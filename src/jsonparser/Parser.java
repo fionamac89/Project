@@ -46,7 +46,6 @@ public class Parser {
 			if (jsonObj.containsKey("status_code")) {
 				m = null;
 			} else {
-
 				long id = (Long) jsonObj.get("id");
 				String overview = (String) jsonObj.get("overview");
 				String title = (String) jsonObj.get("title");
@@ -54,8 +53,6 @@ public class Parser {
 
 				System.out.println("ID: " + id);
 				m.setId(id);
-				System.out.println("Orig. Title: " + origTitle);
-				m.setOrigTitle(origTitle);
 				System.out.println("Title: " + title);
 				m.setTitle(title);
 				System.out.println("Overview: " + overview);
@@ -73,16 +70,6 @@ public class Parser {
 					System.out.println(genre);
 					m.setGenres(genre);
 				}
-
-				/*
-				 * if (jsonObj.containsKey("keywords")) { JSONObject keywords =
-				 * (JSONObject) jsonObj .get("keywords"); JSONArray kwords =
-				 * (JSONArray) keywords.get("keywords"); Iterator<JSONObject>
-				 * kiterator = kwords.iterator(); while (kiterator.hasNext()) {
-				 * JSONObject keyword = (JSONObject) kiterator.next()
-				 * .get("name"); System.out.println(keyword);
-				 * m.setKeywords((String) keyword.get("keywords")); } }
-				 */
 
 				return m;
 			}

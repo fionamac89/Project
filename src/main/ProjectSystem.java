@@ -14,6 +14,7 @@ import jsonparser.Parser;
 import wordplay.Tagger;
 import classifier.Classifier;
 import database.Database;
+import evaluation.Evaluation;
 
 public class ProjectSystem implements ISystem {
 
@@ -21,18 +22,16 @@ public class ProjectSystem implements ISystem {
 	private BufferedReader br = null;
 	private FileReader reader = null;
 	private Parser parser = null;
-	private Movie movie = null;
 	private Tagger tagger = null;
-	private Map<Long, String> genreMap = null; 
 	private Classifier cls = null;
+	private Evaluation eval = null;
 
 	public ProjectSystem() {
-		db = new Database();
-		parser = new Parser();
-		movie = new Movie();
-		genreMap = new HashMap<Long, String>();
+		db = new Database("jdbc:mysql://localhost:3306/fdb11130");
+		parser = new Parser();		
 		cls = new Classifier();
 		tagger = new Tagger();
+		eval = new Evaluation();
 	}
 
 	public void testDbConnect() {
@@ -44,7 +43,9 @@ public class ProjectSystem implements ISystem {
 	}
 
 	public void addMovieList(String filepath) {
+		Movie movie = null;
 		try {
+			movie = new Movie();
 			reader = new FileReader(filepath);
 			br = new BufferedReader(reader);
 			String line = "";
@@ -69,7 +70,9 @@ public class ProjectSystem implements ISystem {
 	}
 
 	public void addGenreList(String filepath) {
+		Map<Long, String> genreMap = null;
 		try {
+			genreMap = new HashMap<Long, String>();
 			reader = new FileReader(filepath);
 			br = new BufferedReader(reader);
 			String line = br.readLine();
@@ -102,14 +105,11 @@ public class ProjectSystem implements ISystem {
 		}
 	}
 
-	public void createTestSet(List<Integer> movies, int genreid, String suffix) {
+	private void createTestSet(List<Integer> movies, int genreid, String suffix) {
 		List<Integer> test = new ArrayList<Integer>(movies);
 		db.dbPopulateTestSet(test, genreid, suffix);
 	}
 
-	/*
-	 * Not needed?
-	 */
 	public void createThesaurus(String name) {
 		db.dbCreateThesaurus(name);
 	}
@@ -130,13 +130,29 @@ public class ProjectSystem implements ISystem {
 			films = db.dbGetMoviesForGenreTrainSet(genreid, suffix);
 			for (Integer filmid : films) {
 				overview = db.dbGetOverview(filmid);
-				//tagger.setStopWordFilter(overview); //Change this line to change filter
-				//tagger.setStemStopFilter(overview);
-				//tagger.setStemFilter(overview);
-				//tagger.setNoFilter(overview);
 				tagger.setFilter(overview, filter);
 				tagger.applyFilter();
 			}
+			db.dbPopulateThesaurus(tagger.getWords(), genreid, name);
+			System.out.println(genreid + ": " + tagger.getWords());
+			tagger.clearWords();
+		}
+		System.out.println("Thesaurus populated");
+	}
+	
+	public void populateThesaurus2(String filter, String name, String suffix) {
+		List<Integer> genres = db.dbGetGenreList();
+		List<Integer> films = null;
+		String overview = "";
+		for (Integer genreid : genres) {
+			films = db.dbGetMoviesForGenreTrainSet(genreid, suffix);
+			for (Integer filmid : films) {
+				overview = db.dbGetOverview(filmid);
+				tagger.setFilter2(overview, filter);
+				tagger.applyFilter2();
+			}
+			//Do something here to only add words with good frequency 
+			// - possibly test lower case and stop filter to try to find reasonable thresholds?
 			db.dbPopulateThesaurus(tagger.getWords(), genreid, name);
 			System.out.println(genreid + ": " + tagger.getWords());
 			tagger.clearWords();
@@ -162,9 +178,15 @@ public class ProjectSystem implements ISystem {
 		Map<Integer, Integer> testSet = db.dbGetTestSet(suffix);
 		String overview = "";
 		String genre = "";
+		String temp = "";
 		for(Integer e : testSet.keySet()) {
 			overview = db.dbGetOverview(e);
-			genre = cls.classifyData(tagger.stemFilter(overview));
+			if (tagger.getStemFilterStatus()) {
+				temp = tagger.classifyStemFilter(overview);
+			} else {
+				temp = overview;
+			}
+			genre = cls.classifyData(temp);
 			cls.setClassified(e, db.dbGetGenreID(genre));
 			System.out.println(e);
 		}
@@ -178,9 +200,31 @@ public class ProjectSystem implements ISystem {
 	}
 	
 	public void archiveClassified(String name) {
-		db.dbPopulateClassifiedSpecific(name, cls.getClassifiedData());
+		db.dbPopulateClassified(name, cls.getClassifiedData());
 		System.out.println("DB Populated");
 	}
 
+	/*
+	 * TODO: Finish these processes. Update database class.
+	 */
+	public void runEval(String test, String classified) {
+		Map<Integer, Integer> testMap = db.dbGetTestSet(test);
+		Map<Integer, Integer> classifiedMap = db.dbGetTable(classified);
+		
+		eval.runEvaluation(testMap, classifiedMap);
 
+	}
+	
+	public void evalPerGenre(String test, String classified) {
+		Map<Integer, Integer> testMap = null;
+		Map<Integer, Integer> classifiedMap = null;
+		List<Integer> genres = db.dbGetGenreList();
+		for(int genreid : genres) {
+			testMap = db.dbGetMoviesForGenre(genreid, test);
+			classifiedMap = db.dbGetMoviesForGenre(genreid, classified);
+			
+			eval.runEvaluation(testMap, classifiedMap);
+		}
+		
+	}
 }

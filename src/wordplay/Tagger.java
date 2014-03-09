@@ -28,6 +28,7 @@ public class Tagger {
 	private List<String> stopwords = null;
 	private Version luceneVersion = Version.LUCENE_46;
 	private boolean defaultList = true;
+	private boolean stemFilter = false;
 
 	public Tagger() {
 		importantText = new HashMap<String, Integer>();
@@ -58,25 +59,49 @@ public class Tagger {
 	}
 
 	public void setFilter(String content, String filter) {
+		tokenStream = new StandardTokenizer(luceneVersion, new StringReader(
+				content));
 		switch (filter) {
 		case "sw":
-			setStopWordFilter(content);
+			setStopWordFilter();
 			break;
 		case "s":
-			setStemFilter(content);
+			setStemFilter();
 			break;
 		case "ssw":
-			setStemStopFilter(content);
+			// setStemStopFilter();
+			setStopWordFilter();
+			setStemFilter();
 			break;
 		case "none":
 		default:
-			setNoFilter(content);
+			;
 		}
 	}
 
-	public void setStopWordFilter(String content) {
+	public void setFilter2(String content, String filter) {
 		tokenStream = new StandardTokenizer(luceneVersion, new StringReader(
-				content));
+				content.toLowerCase(Locale.UK)));
+		switch (filter) {
+		case "sw":
+			setStopWordFilter();
+			break;
+		case "s":
+			setStemFilter();
+			break;
+		case "ssw":
+			// setStemStopFilter();
+			setStopWordFilter();
+			setStemFilter();
+			break;
+		case "none":
+		default:
+			;
+		}
+	}
+
+	private void setStopWordFilter() {
+
 		if (defaultList) {
 			tokenStream = new StopFilter(luceneVersion, tokenStream,
 					StandardAnalyzer.STOP_WORDS_SET);
@@ -86,29 +111,24 @@ public class Tagger {
 		}
 	}
 
-	public void setStemStopFilter(String content) {
-		tokenStream = new StandardTokenizer(luceneVersion, new StringReader(
-				content));
-		if (defaultList) {
-			tokenStream = new StopFilter(luceneVersion, tokenStream,
-					StandardAnalyzer.STOP_WORDS_SET);
-		} else {
-			tokenStream = new StopFilter(luceneVersion, tokenStream,
-					StopFilter.makeStopSet(luceneVersion, stopwords));
-		}
+	// public void setStemStopFilter(String content) {
+	//
+	// if (defaultList) {
+	// tokenStream = new StopFilter(luceneVersion, tokenStream,
+	// StandardAnalyzer.STOP_WORDS_SET);
+	// } else {
+	// tokenStream = new StopFilter(luceneVersion, tokenStream,
+	// StopFilter.makeStopSet(luceneVersion, stopwords));
+	// }
+	//
+	// tokenStream = new PorterStemFilter(tokenStream);
+	// }
+
+	private void setStemFilter() {
 
 		tokenStream = new PorterStemFilter(tokenStream);
-	}
+		stemFilter = true;
 
-	public void setStemFilter(String content) {
-		tokenStream = new StandardTokenizer(luceneVersion, new StringReader(
-				content));
-		tokenStream = new PorterStemFilter(tokenStream);
-	}
-
-	public void setNoFilter(String content) {
-		tokenStream = new StandardTokenizer(luceneVersion, new StringReader(
-				content));
 	}
 
 	public void applyFilter() {
@@ -131,7 +151,26 @@ public class Tagger {
 		}
 	}
 
-	public void termOccurrence(String text) {
+	public void applyFilter2() {
+		CharTermAttribute token = tokenStream
+				.addAttribute(CharTermAttribute.class);
+		try {
+			tokenStream.reset();
+			while (tokenStream.incrementToken()) {
+				output = token.toString();
+				if (output != null && !isNumeric(output)) {
+					termOccurrence(output.replaceAll("\\p{P}", ""));
+				}
+			}
+			tokenStream.end();
+			tokenStream.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	private void termOccurrence(String text) {
 		if (importantText.containsKey(text)) {
 			int temp = importantText.get(text);
 			temp += 1;
@@ -144,7 +183,7 @@ public class Tagger {
 	}
 
 	// Apply stemming to text for when it is used for prediction
-	public String stemFilter(String content) {
+	public String classifyStemFilter(String content) {
 		StringBuilder sb = new StringBuilder();
 		tokenStream = new StandardTokenizer(luceneVersion, new StringReader(
 				content));
@@ -186,5 +225,9 @@ public class Tagger {
 			return false;
 		}
 		return true;
+	}
+
+	public boolean getStemFilterStatus() {
+		return stemFilter;
 	}
 }
