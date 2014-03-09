@@ -4,7 +4,7 @@ package main;
 public interface ISystem {
 
 	public void addMovie();
-	public void addMovieList(String filepath);
+	public void addMovieList(String filepath, String list, String fg);
 	public void addGenre();
 	public void addGenreList(String filepath);
 	public void createTrainingSet(int size, String suffix);
@@ -15,4 +15,5 @@ public interface ISystem {
 	public void classifyTestData(String suffix);
 	public void createClassified(String name);
 	public void archiveClassified(String name);
+	public void deleteContent(String name);
 }

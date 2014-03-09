@@ -19,6 +19,8 @@ public class Evaluation {
 
 	public void runEvaluation(Map<Integer, Integer> gold,
 			Map<Integer, Integer> test) {
+		System.out.println("Gold size: " + gold.size());
+		System.out.println("Test size: " + test.size());
 		for (Entry<Integer, Integer> e : gold.entrySet()) {
 			if (test.containsKey(e.getKey())) {
 				if (e.getValue() == test.get(e.getKey())) {
@@ -41,11 +43,8 @@ public class Evaluation {
 	}
 
 	private void setPrecision() {
-		if (truepos == 0 && falsepos == 0) {
-			precision = 1.0;
-		} else {
-			precision = truepos / (truepos + falsepos);
-		}
+
+		precision = truepos / (truepos + falsepos);
 	}
 
 	private void setRecall() {

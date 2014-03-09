@@ -45,12 +45,60 @@ public class Database {
 		}
 	}
 
-	public void dbInsertMovie(Movie movie) {
+	public void dbCreateFilmList(String name) {
+		PreparedStatement pst = null;
+		try {
+			String sql = "CREATE TABLE "
+					+ name
+					+ "(ID INT(6) NOT NULL, Title TEXT NOT NULL, Overview TEXT NOT NULL, PRIMARY KEY(ID));";
+			pst = con.prepareStatement(sql);
+			pst.executeUpdate();
+		} catch (SQLException ex) {
+			Logger lgr = Logger.getLogger(Database.class.getName());
+			lgr.log(Level.SEVERE, ex.getMessage(), ex);
+
+		} finally {
+			try {
+				if (pst != null) {
+					pst.close();
+				}
+			} catch (SQLException ex) {
+				Logger lgr = Logger.getLogger(Database.class.getName());
+				lgr.log(Level.WARNING, ex.getMessage(), ex);
+			}
+		}
+	}
+	
+	public void dbCreateFGLink(String name) {
+		PreparedStatement pst = null;
+		try {
+			String sql = "CREATE TABLE "
+					+ name
+					+ "(FilmID INT(6) NOT NULL, GenreID INT(6) NOT NULL, FOREIGN KEY (FilmID) REFERENCES FilmList(ID) ON UPDATE CASCADE ON DELETE CASCADE, FOREIGN KEY (GenreID) REFERENCES GenreTest(ID));";
+			pst = con.prepareStatement(sql);
+			pst.executeUpdate();
+		} catch (SQLException ex) {
+			Logger lgr = Logger.getLogger(Database.class.getName());
+			lgr.log(Level.SEVERE, ex.getMessage(), ex);
+
+		} finally {
+			try {
+				if (pst != null) {
+					pst.close();
+				}
+			} catch (SQLException ex) {
+				Logger lgr = Logger.getLogger(Database.class.getName());
+				lgr.log(Level.WARNING, ex.getMessage(), ex);
+			}
+		}
+	}
+	
+	public void dbInsertMovie(Movie movie, String list, String fg) {
 		PreparedStatement pst = null;
 		long key = movie.getId();
 		try {
 			pst = con
-					.prepareStatement("INSERT IGNORE INTO FilmList(ID, Title, Overview) VALUES(?,?,?)");
+					.prepareStatement("INSERT IGNORE INTO "+list+"(ID, Title, Overview) VALUES(?,?,?)");
 
 			for (String genre : movie.getGenres()) {
 				pst.setLong(1, key);
@@ -62,7 +110,7 @@ public class Database {
 				}
 
 				pst.executeUpdate();
-				dbCreateFGLink(movie, genre);
+				dbCreateFGLink(fg, movie, genre);
 			}
 		} catch (SQLException ex) {
 			Logger lgr = Logger.getLogger(Database.class.getName());
@@ -83,11 +131,11 @@ public class Database {
 		}
 	}
 
-	private void dbCreateFGLink(Movie movie, String genre) {
+	private void dbCreateFGLink(String fg, Movie movie, String genre) {
 		PreparedStatement pst = null;
 		try {
 			pst = con
-					.prepareStatement("INSERT IGNORE INTO FGLink(FilmID, GenreID) VALUES(?,?)");
+					.prepareStatement("INSERT IGNORE INTO "+fg+"(FilmID, GenreID) VALUES(?,?)");
 			pst.setLong(1, movie.getId());
 			int genreID = dbGetGenreID(genre);
 			pst.setInt(2, genreID);
@@ -266,7 +314,7 @@ public class Database {
 				lgr.log(Level.WARNING, ex.getMessage(), ex);
 			}
 		}
-
+		System.out.println("Movies from FGLink: "+movies);
 		return movies;
 	}
 
@@ -366,6 +414,56 @@ public class Database {
 			}
 		}
 		return overview;
+	}
+
+	public void dbCreateTrainingSet(String suffix) {
+		PreparedStatement pst = null;
+		try {
+			String sql = "CREATE TABLE "
+					+ "TrainingSet"
+					+ suffix
+					+ "(FilmID INT(6) NOT NULL, GenreID INT(6) NOT NULL, FOREIGN KEY (FilmID) REFERENCES FilmList(ID), FOREIGN KEY (GenreID) REFERENCES GenreTest(ID));";
+			pst = con.prepareStatement(sql);
+			pst.executeUpdate();
+		} catch (SQLException ex) {
+			Logger lgr = Logger.getLogger(Database.class.getName());
+			lgr.log(Level.SEVERE, ex.getMessage(), ex);
+
+		} finally {
+			try {
+				if (pst != null) {
+					pst.close();
+				}
+			} catch (SQLException ex) {
+				Logger lgr = Logger.getLogger(Database.class.getName());
+				lgr.log(Level.WARNING, ex.getMessage(), ex);
+			}
+		}
+	}
+
+	public void dbCreateTestSet(String suffix) {
+		PreparedStatement pst = null;
+		try {
+			String sql = "CREATE TABLE "
+					+ "TestSet"
+					+ suffix
+					+ "(FilmID INT(6) NOT NULL, GenreID INT(6) NOT NULL, FOREIGN KEY (FilmID) REFERENCES FilmList(ID), FOREIGN KEY (GenreID) REFERENCES GenreTest(ID));";
+			pst = con.prepareStatement(sql);
+			pst.executeUpdate();
+		} catch (SQLException ex) {
+			Logger lgr = Logger.getLogger(Database.class.getName());
+			lgr.log(Level.SEVERE, ex.getMessage(), ex);
+
+		} finally {
+			try {
+				if (pst != null) {
+					pst.close();
+				}
+			} catch (SQLException ex) {
+				Logger lgr = Logger.getLogger(Database.class.getName());
+				lgr.log(Level.WARNING, ex.getMessage(), ex);
+			}
+		}
 	}
 
 	public void dbPopulateTrainingSet(List<Integer> training, int genreid,
@@ -659,19 +757,117 @@ public class Database {
 	}
 
 	public void dbCreateEvalTable(String name) {
+		PreparedStatement pst = null;
+		try {
+			String sql = "CREATE TABLE "
+					+ name
+					+ "(Classification VARCHAR(64) NOT NULL, Type VARCHAR(12) NOT NULL, Score DOUBLE(6,4) NOT NULL);";
+			pst = con.prepareStatement(sql);
+			pst.executeUpdate();
+		} catch (SQLException ex) {
+			Logger lgr = Logger.getLogger(Database.class.getName());
+			lgr.log(Level.SEVERE, ex.getMessage(), ex);
 
+		} finally {
+			try {
+				if (pst != null) {
+					pst.close();
+				}
+			} catch (SQLException ex) {
+				Logger lgr = Logger.getLogger(Database.class.getName());
+				lgr.log(Level.WARNING, ex.getMessage(), ex);
+			}
+		}
 	}
 
-	public void dbAddEval(String name, int genreid, String type, double score) {
+	public void dbCreateEvalGenreTable(String name) {
+		PreparedStatement pst = null;
+		try {
+			String sql = "CREATE TABLE "
+					+ name
+					+ "(GenreID INT(6) NOT NULL, Type VARCHAR(12) NOT NULL, Score DOUBLE(6,4) NOT NULL, FOREIGN KEY (GenreID) REFERENCES GenreTest(ID));";
+			pst = con.prepareStatement(sql);
+			pst.executeUpdate();
+		} catch (SQLException ex) {
+			Logger lgr = Logger.getLogger(Database.class.getName());
+			lgr.log(Level.SEVERE, ex.getMessage(), ex);
 
+		} finally {
+			try {
+				if (pst != null) {
+					pst.close();
+				}
+			} catch (SQLException ex) {
+				Logger lgr = Logger.getLogger(Database.class.getName());
+				lgr.log(Level.WARNING, ex.getMessage(), ex);
+			}
+		}
 	}
 
-	public void dbDeleteMovies() {
+	public void dbAddEval(String name, String className, String type,
+			double score) {
+		PreparedStatement pst = null;
+		try {
+			String sql = "INSERT IGNORE INTO " + name
+					+ "(Classification, Type, Score) VALUES (?,?,?)";
+			System.out.println(sql);
+			pst = con.prepareStatement(sql);
+
+			pst.setString(1, className);
+			pst.setString(2, type);
+			pst.setDouble(3, score);
+			pst.executeUpdate();
+
+		} catch (SQLException ex) {
+			Logger lgr = Logger.getLogger(Database.class.getName());
+			lgr.log(Level.SEVERE, ex.getMessage(), ex);
+		} finally {
+			try {
+				if (pst != null) {
+					pst.close();
+				}
+			} catch (SQLException ex) {
+				Logger lgr = Logger.getLogger(Database.class.getName());
+				lgr.log(Level.WARNING, ex.getMessage(), ex);
+			}
+		}
+	}
+
+	public void dbAddEvalGenre(String name, int genreid, String type,
+			double score) {
+		PreparedStatement pst = null;
+		try {
+			String sql = "INSERT IGNORE INTO " + name
+					+ "(GenreID, Type, Score) VALUES (?,?,?) VALUES (?,?)";
+			System.out.println(sql);
+			pst = con.prepareStatement(sql);
+
+			pst.setInt(1, genreid);
+			pst.setString(2, type);
+			pst.setDouble(3, score);
+			pst.executeUpdate();
+
+		} catch (SQLException ex) {
+			Logger lgr = Logger.getLogger(Database.class.getName());
+			lgr.log(Level.SEVERE, ex.getMessage(), ex);
+		} finally {
+			try {
+				if (pst != null) {
+					pst.close();
+				}
+			} catch (SQLException ex) {
+				Logger lgr = Logger.getLogger(Database.class.getName());
+				lgr.log(Level.WARNING, ex.getMessage(), ex);
+			}
+		}
+	}
+
+	public void dbDeleteFromTable(String name) {
 		Statement st = null;
 		try {
 			st = con.createStatement();
-			st.execute("DELETE FROM FilmList");
-			System.out.println("FilmList content Deleted.");
+			st.execute("DELETE FROM "+name);
+			System.out.println(name+" content deleted.");
 		} catch (SQLException ex) {
 			Logger lgr = Logger.getLogger(Database.class.getName());
 			lgr.log(Level.SEVERE, ex.getMessage(), ex);

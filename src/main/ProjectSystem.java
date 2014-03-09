@@ -38,11 +38,21 @@ public class ProjectSystem implements ISystem {
 		db.dbConnect();
 	}
 	
+	public void createFilmList(String name) {
+		db.dbCreateFilmList(name);
+		System.out.println("Film list created");
+	}
+	
+	public void createFGLink(String name) {
+		db.dbCreateFGLink(name);
+		System.out.println("FGLink created");
+	}
+	
 	public void addMovie() {
 
 	}
 
-	public void addMovieList(String filepath) {
+	public void addMovieList(String filepath, String list, String fg) {
 		Movie movie = null;
 		try {
 			movie = new Movie();
@@ -54,7 +64,7 @@ public class ProjectSystem implements ISystem {
 
 				movie = parser.parseMovie(line);
 				if (movie != null) {
-					db.dbInsertMovie(movie);
+					db.dbInsertMovie(movie, list, fg);
 				}
 			}
 		} catch (FileNotFoundException e) {
@@ -86,22 +96,36 @@ public class ProjectSystem implements ISystem {
 		}
 	}
 
+	public void createTrainingTable(String suffix) {
+		db.dbCreateTrainingSet(suffix);
+		System.out.println("Training Table created");
+	}
+	
+	public void createTestTable(String suffix) {
+		db.dbCreateTestSet(suffix);
+		System.out.println("Test Table created");
+	}
+	
 	public void createTrainingSet(int size, String suffix) {
 		List<Integer> genres = db.dbGetGenreList();
 		List<Integer> movies = null;
-		List<Integer> training = new ArrayList<Integer>();
+		List<Integer> training = null;
 		for (Integer genreid : genres) {
 			int i = 0;
-			movies = db.dbGetMoviesForGenre(genreid);
+			movies = new ArrayList<Integer>(db.dbGetMoviesForGenre(genreid));
+			System.out.println("Movies: "+movies);
+			training = new ArrayList<Integer>();
 			int listSize = movies.size();
 			while ((i < size) && (i < listSize)) {
 				training.add(movies.remove(0));
 				i++;
 			}
 			System.out.println(genreid + ": " + training.size());
-			db.dbPopulateTrainingSet(training, genreid, suffix);
-			createTestSet(movies, genreid, suffix);
-			training.clear();
+			System.out.println("Training: " + training);
+			//db.dbPopulateTrainingSet(training, genreid, suffix);
+			System.out.println("Test: "+movies);
+			//db.dbPopulateTestSet(movies, genreid, suffix);
+			//createTestSet(movies, genreid, suffix);
 		}
 	}
 
@@ -207,24 +231,46 @@ public class ProjectSystem implements ISystem {
 	/*
 	 * TODO: Finish these processes. Update database class.
 	 */
-	public void runEval(String test, String classified) {
+	
+	public void createEval(String name) {
+		db.dbCreateEvalTable(name);
+		System.out.println("Eval table created");
+	}
+	
+	public void createEvalGenre(String name) {
+		db.dbCreateEvalGenreTable(name);
+		System.out.println("Eval genre table created");
+	}
+	
+	public void runEval(String name, String test, String classified) {
 		Map<Integer, Integer> testMap = db.dbGetTestSet(test);
 		Map<Integer, Integer> classifiedMap = db.dbGetTable(classified);
 		
 		eval.runEvaluation(testMap, classifiedMap);
+		db.dbAddEval(name, classified, "Precision", eval.getPrecision());
+		db.dbAddEval(name, classified, "Recall", eval.getRecall());
+		db.dbAddEval(name, classified, "Fmeasure", eval.getFmeasure());
 
 	}
 	
-	public void evalPerGenre(String test, String classified) {
+	public void runEvalPerGenre(String name, String test, String classified) {
 		Map<Integer, Integer> testMap = null;
 		Map<Integer, Integer> classifiedMap = null;
 		List<Integer> genres = db.dbGetGenreList();
 		for(int genreid : genres) {
-			testMap = db.dbGetMoviesForGenre(genreid, test);
+			testMap = db.dbGetMoviesForGenre(genreid, "TestSet"+test);
 			classifiedMap = db.dbGetMoviesForGenre(genreid, classified);
 			
 			eval.runEvaluation(testMap, classifiedMap);
+			
+			db.dbAddEvalGenre(name, genreid, "Precision", eval.getPrecision());
+			db.dbAddEvalGenre(name, genreid, "Recall", eval.getRecall());
+			db.dbAddEvalGenre(name, genreid, "Fmeasure", eval.getFmeasure());
 		}
 		
+	}
+	
+	public void deleteContent(String name) {
+		db.dbDeleteFromTable(name);
 	}
 }
