@@ -74,7 +74,7 @@ public class Database {
 		try {
 			String sql = "CREATE TABLE "
 					+ name
-					+ "(FilmID INT(6) NOT NULL, GenreID INT(6) NOT NULL, FOREIGN KEY (FilmID) REFERENCES FilmList(ID) ON UPDATE CASCADE ON DELETE CASCADE, FOREIGN KEY (GenreID) REFERENCES GenreTest(ID));";
+					+ "(FilmID INT(6) NOT NULL, GenreID INT(6) NOT NULL, FOREIGN KEY (FilmID) REFERENCES FilmList(ID) ON UPDATE CASCADE ON DELETE CASCADE, FOREIGN KEY (GenreID) REFERENCES GenreTest(ID) ON UPDATE CASCADE ON DELETE CASCADE);";
 			pst = con.prepareStatement(sql);
 			pst.executeUpdate();
 		} catch (SQLException ex) {
