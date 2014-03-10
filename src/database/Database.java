@@ -290,13 +290,18 @@ public class Database {
 		PreparedStatement pst = null;
 		ResultSet rs = null;
 		List<Integer> movies = new ArrayList<Integer>();
+		int result = 0;
 		try {
 			pst = con
 					.prepareStatement("SELECT FilmID FROM FGLink WHERE GenreID=?");
 			pst.setInt(1, genre);
 			rs = pst.executeQuery();
 			while (rs.next()) {
-				movies.add(rs.getInt("FilmID"));
+				result = rs.getInt("FilmID");
+				if(!movies.contains(result)) {
+					movies.add(result);
+				}
+				
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
