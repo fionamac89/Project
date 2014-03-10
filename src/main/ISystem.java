@@ -7,7 +7,7 @@ public interface ISystem {
 	public void addMovieList(String filepath, String list, String fg);
 	public void addGenre();
 	public void addGenreList(String filepath);
-	public void createTrainingSet(int size, String suffix);
+	public void createTrainingSet(int size, String suffix, String source);
 	public void createThesaurus(String name);
 	public void setStopWords(String filepath);
 	public void populateThesaurus(String filter, String name, String suffix);
@@ -16,4 +16,5 @@ public interface ISystem {
 	public void createClassified(String name);
 	public void archiveClassified(String name);
 	public void deleteContent(String name);
+	public boolean tableExists(String name);
 }

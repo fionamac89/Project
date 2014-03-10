@@ -106,13 +106,13 @@ public class ProjectSystem implements ISystem {
 		System.out.println("Test Table created");
 	}
 	
-	public void createTrainingSet(int size, String suffix) {
+	public void createTrainingSet(int size, String suffix, String source) {
 		List<Integer> genres = db.dbGetGenreList();
 		List<Integer> movies = null;
 		List<Integer> training = null;
 		for (Integer genreid : genres) {
 			int i = 0;
-			movies = new ArrayList<Integer>(db.dbGetMoviesForGenreList(genreid, "FGLink_2"));
+			movies = new ArrayList<Integer>(db.dbGetMoviesForGenreList(genreid, source));
 			System.out.println("Movies: "+movies);
 			training = new ArrayList<Integer>();
 			int listSize = movies.size();
@@ -121,18 +121,18 @@ public class ProjectSystem implements ISystem {
 				i++;
 			}
 			System.out.println(genreid + ": " + training.size());
-			System.out.println("Training: " + training);
-			//db.dbPopulateTrainingSet(training, genreid, suffix);
-			System.out.println("Test: "+movies);
-			//db.dbPopulateTestSet(movies, genreid, suffix);
+			//System.out.println("Training: " + training);
+			db.dbPopulateTrainingSet(training, genreid, suffix);
+			//System.out.println("Test: "+movies);
+			db.dbPopulateTestSet(movies, genreid, suffix);
 			//createTestSet(movies, genreid, suffix);
 		}
 	}
 
-	private void createTestSet(List<Integer> movies, int genreid, String suffix) {
-		List<Integer> test = new ArrayList<Integer>(movies);
-		db.dbPopulateTestSet(test, genreid, suffix);
-	}
+//	private void createTestSet(List<Integer> movies, int genreid, String suffix) {
+//		List<Integer> test = new ArrayList<Integer>(movies);
+//		db.dbPopulateTestSet(test, genreid, suffix);
+//	}
 
 	public void createThesaurus(String name) {
 		db.dbCreateThesaurus(name);
@@ -268,6 +268,10 @@ public class ProjectSystem implements ISystem {
 			db.dbAddEvalGenre(name, genreid, "Fmeasure", eval.getFmeasure());
 		}
 		
+	}
+	
+	public boolean tableExists(String name) {
+		return db.tableExists(name);
 	}
 	
 	public void deleteContent(String name) {
