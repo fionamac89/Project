@@ -112,7 +112,7 @@ public class ProjectSystem implements ISystem {
 		List<Integer> training = null;
 		for (Integer genreid : genres) {
 			int i = 0;
-			movies = new ArrayList<Integer>(db.dbGetMoviesForGenre(genreid));
+			movies = new ArrayList<Integer>(db.dbGetMoviesForGenreList(genreid, "FGLink_2"));
 			System.out.println("Movies: "+movies);
 			training = new ArrayList<Integer>();
 			int listSize = movies.size();
@@ -151,7 +151,7 @@ public class ProjectSystem implements ISystem {
 		List<Integer> films = null;
 		String overview = "";
 		for (Integer genreid : genres) {
-			films = db.dbGetMoviesForGenreTrainSet(genreid, suffix);
+			films = db.dbGetMoviesForGenreList(genreid, "TrainingSet"+suffix);
 			for (Integer filmid : films) {
 				overview = db.dbGetOverview(filmid);
 				tagger.setFilter(overview, filter);
@@ -169,7 +169,7 @@ public class ProjectSystem implements ISystem {
 		List<Integer> films = null;
 		String overview = "";
 		for (Integer genreid : genres) {
-			films = db.dbGetMoviesForGenreTrainSet(genreid, suffix);
+			films = db.dbGetMoviesForGenreList(genreid, "TrainingSet"+suffix);
 			for (Integer filmid : films) {
 				overview = db.dbGetOverview(filmid);
 				tagger.setFilter2(overview, filter);
@@ -258,8 +258,8 @@ public class ProjectSystem implements ISystem {
 		Map<Integer, Integer> classifiedMap = null;
 		List<Integer> genres = db.dbGetGenreList();
 		for(int genreid : genres) {
-			testMap = db.dbGetMoviesForGenre(genreid, "TestSet"+test);
-			classifiedMap = db.dbGetMoviesForGenre(genreid, classified);
+			testMap = db.dbGetMoviesForGenreMap(genreid, "TestSet"+test);
+			classifiedMap = db.dbGetMoviesForGenreMap(genreid, classified);
 			
 			eval.runEvaluation(testMap, classifiedMap);
 			

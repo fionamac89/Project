@@ -286,44 +286,7 @@ public class Database {
 		}
 	}
 
-	public List<Integer> dbGetMoviesForGenre(int genre) {
-		PreparedStatement pst = null;
-		ResultSet rs = null;
-		List<Integer> movies = new ArrayList<Integer>();
-		int result = 0;
-		try {
-			pst = con
-					.prepareStatement("SELECT FilmID FROM FGLink WHERE GenreID=?");
-			pst.setInt(1, genre);
-			rs = pst.executeQuery();
-			while (rs.next()) {
-				result = rs.getInt("FilmID");
-				if(!movies.contains(result)) {
-					movies.add(result);
-				}
-				
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				if (pst != null) {
-					pst.close();
-				}
-				if (rs != null) {
-					rs.close();
-				}
-
-			} catch (SQLException ex) {
-				Logger lgr = Logger.getLogger(Database.class.getName());
-				lgr.log(Level.WARNING, ex.getMessage(), ex);
-			}
-		}
-		System.out.println("Movies from FGLink: "+movies);
-		return movies;
-	}
-
-	public Map<Integer, Integer> dbGetMoviesForGenre(int genre, String table) {
+	public Map<Integer, Integer> dbGetMoviesForGenreMap(int genre, String table) {
 		PreparedStatement pst = null;
 		ResultSet rs = null;
 		String sql = "";
@@ -356,13 +319,13 @@ public class Database {
 		return movies;
 	}
 
-	public List<Integer> dbGetMoviesForGenreTrainSet(int genre, String suffix) {
+	public List<Integer> dbGetMoviesForGenreList(int genre, String name) {
 		PreparedStatement pst = null;
 		ResultSet rs = null;
 		List<Integer> movies = new ArrayList<Integer>();
 		String sql = "";
 		try {
-			sql = "SELECT FilmID FROM TrainingSet" + suffix
+			sql = "SELECT FilmID FROM " + name
 					+ " WHERE GenreID=?";
 			pst = con.prepareStatement(sql);
 			pst.setInt(1, genre);
