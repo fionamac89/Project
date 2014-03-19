@@ -220,6 +220,19 @@ public class ProjectSystem implements ISystem {
 
 	}
 
+	public void trainClassifier2(String name, int upper, int lower) {
+		Map<Integer, String> genreList = db.dbGetGenreListMap();
+
+		for (Integer genreid : genreList.keySet()) {
+			List<String> wordsList = db.dbApplyThreshold(name, genreid, upper, lower);
+			cls.addToDataset(genreList.get(genreid), cls.readLines(wordsList));
+		}
+		cls.trainClassifier();
+		cls.setKnowledgeBase();
+		cls.resetClassifier();
+		System.out.println("Classifier Trained");
+	}
+	
 	public void createClassified(String name) {
 		db.dbCreateClassifiedTable(name);
 		System.out.println("Classified Table Created");
@@ -263,7 +276,7 @@ public class ProjectSystem implements ISystem {
 			if (testMap.size() > 0 && classifiedMap.size() > 0) {
 				genre_count++;
 				eval.runEvaluation(testMap, classifiedMap);
-				
+
 				db.dbAddEvalGenre(table, genreid, "Precision",
 						eval.getPrecision());
 				db.dbAddEvalGenre(table, genreid, "Recall", eval.getRecall());
@@ -273,22 +286,22 @@ public class ProjectSystem implements ISystem {
 				precision += eval.getPrecision();
 				recall += eval.getRecall();
 				fmeasure += eval.getFmeasure();
-				
+
 				System.out.println(genreid);
 				System.out.println("Precision: " + eval.getPrecision());
 				System.out.println("Recall: " + eval.getRecall());
 				System.out.println("Fmeasure: " + eval.getFmeasure());
 			}
 		}
-		
-		precision = (precision/genre_count);
-		recall = (recall/genre_count);
-		fmeasure = (fmeasure/genre_count);
-		
-		db.dbCreateEvalTable("Total_"+table);
-		db.dbAddEval("Total_"+table, classified, "Precision", precision);
-		db.dbAddEval("Total_"+table, classified, "Recall", recall);
-		db.dbAddEval("Total_"+table, classified, "Fmeasure", fmeasure);
+
+		precision = (precision / genre_count);
+		recall = (recall / genre_count);
+		fmeasure = (fmeasure / genre_count);
+
+		db.dbCreateEvalTable("Total_" + table);
+		db.dbAddEval("Total_" + table, classified, "Precision", precision);
+		db.dbAddEval("Total_" + table, classified, "Recall", recall);
+		db.dbAddEval("Total_" + table, classified, "Fmeasure", fmeasure);
 
 	}
 
@@ -312,4 +325,5 @@ public class ProjectSystem implements ISystem {
 		// eval.setFmeasure();
 		System.out.println("Fmeasure: " + eval.getFmeasure());
 	}
+
 }

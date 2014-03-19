@@ -22,4 +22,5 @@ public interface ISystem {
 	public void testEval(int tp, int fp, int fn);
 	public void runEvalPerGenre(String evalName, String suffix, String className);
 	public void createEvalGenre(String evalName);
+	public void trainClassifier2(String thesName, int i, int j);
 }

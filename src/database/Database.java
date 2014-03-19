@@ -717,6 +717,40 @@ public class Database {
 		}
 	}
 
+	public List<String> dbApplyThreshold(String name, int genreid, int upper, int lower) {
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+		List<String> words = new ArrayList<String>();
+		String sql = "";
+		try {
+			sql = "SELECT * FROM " + name + " WHERE GenreID=? AND Frequency < ? AND Frequency > ?";
+			pst = con.prepareStatement(sql);
+			pst.setInt(1, genreid);
+			pst.setInt(2, upper);
+			pst.setInt(3, lower);
+			rs = pst.executeQuery();
+			while (rs.next()) {
+				words.add(rs.getString("Word"));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (pst != null) {
+					pst.close();
+				}
+				if (rs != null) {
+					rs.close();
+				}
+
+			} catch (SQLException ex) {
+				Logger lgr = Logger.getLogger(Database.class.getName());
+				lgr.log(Level.WARNING, ex.getMessage(), ex);
+			}
+		}
+		return words;
+	}
+	
 	public void dbCreateEvalGenreTable(String name) {
 		PreparedStatement pst = null;
 		try {
