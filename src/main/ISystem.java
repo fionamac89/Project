@@ -17,4 +17,9 @@ public interface ISystem {
 	public void archiveClassified(String name);
 	public void deleteContent(String name);
 	public boolean tableExists(String name);
+	public void populateThesaurus2(String string, String thesName, String suffix);
+	public void createEval(String evalName);
+	public void testEval(int tp, int fp, int fn);
+	public void runEvalPerGenre(String evalName, String suffix, String className);
+	public void createEvalGenre(String evalName);
 }

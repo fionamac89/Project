@@ -28,26 +28,25 @@ public class ProjectSystem implements ISystem {
 
 	public ProjectSystem() {
 		db = new Database("jdbc:mysql://localhost:3306/fdb11130");
-		parser = new Parser();		
+		parser = new Parser();
 		cls = new Classifier();
 		tagger = new Tagger();
-		eval = new Evaluation();
 	}
 
 	public void testDbConnect() {
 		db.dbConnect();
 	}
-	
+
 	public void createFilmList(String name) {
 		db.dbCreateFilmList(name);
 		System.out.println("Film list created");
 	}
-	
+
 	public void createFGLink(String name) {
 		db.dbCreateFGLink(name);
 		System.out.println("FGLink created");
 	}
-	
+
 	public void addMovie() {
 
 	}
@@ -100,20 +99,21 @@ public class ProjectSystem implements ISystem {
 		db.dbCreateTrainingSet(suffix);
 		System.out.println("Training Table created");
 	}
-	
+
 	public void createTestTable(String suffix) {
 		db.dbCreateTestSet(suffix);
 		System.out.println("Test Table created");
 	}
-	
+
 	public void createTrainingSet(int size, String suffix, String source) {
 		List<Integer> genres = db.dbGetGenreList();
 		List<Integer> movies = null;
 		List<Integer> training = null;
 		for (Integer genreid : genres) {
 			int i = 0;
-			movies = new ArrayList<Integer>(db.dbGetMoviesForGenreList(genreid, source));
-			System.out.println("Movies: "+movies);
+			movies = new ArrayList<Integer>(db.dbGetMoviesForGenreList(genreid,
+					source));
+			System.out.println("Movies: " + movies);
 			training = new ArrayList<Integer>();
 			int listSize = movies.size();
 			while ((i < size) && (i < listSize)) {
@@ -121,18 +121,19 @@ public class ProjectSystem implements ISystem {
 				i++;
 			}
 			System.out.println(genreid + ": " + training.size());
-			//System.out.println("Training: " + training);
+			// System.out.println("Training: " + training);
 			db.dbPopulateTrainingSet(training, genreid, suffix);
-			//System.out.println("Test: "+movies);
+			// System.out.println("Test: "+movies);
 			db.dbPopulateTestSet(movies, genreid, suffix);
-			//createTestSet(movies, genreid, suffix);
+			// createTestSet(movies, genreid, suffix);
 		}
 	}
 
-//	private void createTestSet(List<Integer> movies, int genreid, String suffix) {
-//		List<Integer> test = new ArrayList<Integer>(movies);
-//		db.dbPopulateTestSet(test, genreid, suffix);
-//	}
+	// private void createTestSet(List<Integer> movies, int genreid, String
+	// suffix) {
+	// List<Integer> test = new ArrayList<Integer>(movies);
+	// db.dbPopulateTestSet(test, genreid, suffix);
+	// }
 
 	public void createThesaurus(String name) {
 		db.dbCreateThesaurus(name);
@@ -142,7 +143,7 @@ public class ProjectSystem implements ISystem {
 		tagger.createStopList(filepath);
 		System.out.println("StopList created");
 	}
-	
+
 	// Alter this mechanism to do everything by Genre. May need new query to get
 	// all films from training set with GenreID
 
@@ -151,7 +152,7 @@ public class ProjectSystem implements ISystem {
 		List<Integer> films = null;
 		String overview = "";
 		for (Integer genreid : genres) {
-			films = db.dbGetMoviesForGenreList(genreid, "TrainingSet"+suffix);
+			films = db.dbGetMoviesForGenreList(genreid, "TrainingSet" + suffix);
 			for (Integer filmid : films) {
 				overview = db.dbGetOverview(filmid);
 				tagger.setFilter(overview, filter);
@@ -163,20 +164,21 @@ public class ProjectSystem implements ISystem {
 		}
 		System.out.println("Thesaurus populated");
 	}
-	
+
 	public void populateThesaurus2(String filter, String name, String suffix) {
 		List<Integer> genres = db.dbGetGenreList();
 		List<Integer> films = null;
 		String overview = "";
 		for (Integer genreid : genres) {
-			films = db.dbGetMoviesForGenreList(genreid, "TrainingSet"+suffix);
+			films = db.dbGetMoviesForGenreList(genreid, "TrainingSet" + suffix);
 			for (Integer filmid : films) {
 				overview = db.dbGetOverview(filmid);
 				tagger.setFilter2(overview, filter);
 				tagger.applyFilter2();
 			}
-			//Do something here to only add words with good frequency 
-			// - possibly test lower case and stop filter to try to find reasonable thresholds?
+			// Do something here to only add words with good frequency
+			// - possibly test lower case and stop filter to try to find
+			// reasonable thresholds?
 			db.dbPopulateThesaurus(tagger.getWords(), genreid, name);
 			System.out.println(genreid + ": " + tagger.getWords());
 			tagger.clearWords();
@@ -186,8 +188,8 @@ public class ProjectSystem implements ISystem {
 
 	public void trainClassifier(String name) {
 		Map<Integer, String> genreList = db.dbGetGenreListMap();
-		
-		for(Integer genreid : genreList.keySet()) {
+
+		for (Integer genreid : genreList.keySet()) {
 			List<String> wordsList = db.dbGetThesaurus(genreid, name);
 			cls.addToDataset(genreList.get(genreid), cls.readLines(wordsList));
 		}
@@ -203,7 +205,7 @@ public class ProjectSystem implements ISystem {
 		String overview = "";
 		String genre = "";
 		String temp = "";
-		for(Integer e : testSet.keySet()) {
+		for (Integer e : testSet.keySet()) {
 			overview = db.dbGetOverview(e);
 			if (tagger.getStemFilterStatus()) {
 				temp = tagger.classifyStemFilter(overview);
@@ -215,14 +217,14 @@ public class ProjectSystem implements ISystem {
 			System.out.println(e);
 		}
 		System.out.println("DataClassified");
-		
+
 	}
-	
+
 	public void createClassified(String name) {
 		db.dbCreateClassifiedTable(name);
 		System.out.println("Classified Table Created");
 	}
-	
+
 	public void archiveClassified(String name) {
 		db.dbPopulateClassified(name, cls.getClassifiedData());
 		System.out.println("DB Populated");
@@ -231,50 +233,83 @@ public class ProjectSystem implements ISystem {
 	/*
 	 * TODO: Finish these processes. Update database class.
 	 */
-	
+
 	public void createEval(String name) {
 		db.dbCreateEvalTable(name);
 		System.out.println("Eval table created");
 	}
-	
+
 	public void createEvalGenre(String name) {
 		db.dbCreateEvalGenreTable(name);
 		System.out.println("Eval genre table created");
 	}
-	
-	public void runEval(String name, String test, String classified) {
-		Map<Integer, Integer> testMap = db.dbGetTestSet(test);
-		Map<Integer, Integer> classifiedMap = db.dbGetTable(classified);
-		
-		eval.runEvaluation(testMap, classifiedMap);
-		db.dbAddEval(name, classified, "Precision", eval.getPrecision());
-		db.dbAddEval(name, classified, "Recall", eval.getRecall());
-		db.dbAddEval(name, classified, "Fmeasure", eval.getFmeasure());
 
-	}
-	
-	public void runEvalPerGenre(String name, String test, String classified) {
+	/*
+	 * TODO: review this
+	 */
+	public void runEvalPerGenre(String table, String test, String classified) {
 		Map<Integer, Integer> testMap = null;
 		Map<Integer, Integer> classifiedMap = null;
 		List<Integer> genres = db.dbGetGenreList();
-		for(int genreid : genres) {
-			testMap = db.dbGetMoviesForGenreMap(genreid, "TestSet"+test);
+		double precision = 0;
+		double recall = 0;
+		double fmeasure = 0;
+		int genre_count = 0;
+		for (int genreid : genres) {
+			eval = new Evaluation();
+			testMap = db.dbGetMoviesForGenreMap(genreid, "TestSet" + test);
 			classifiedMap = db.dbGetMoviesForGenreMap(genreid, classified);
-			
-			eval.runEvaluation(testMap, classifiedMap);
-			
-			db.dbAddEvalGenre(name, genreid, "Precision", eval.getPrecision());
-			db.dbAddEvalGenre(name, genreid, "Recall", eval.getRecall());
-			db.dbAddEvalGenre(name, genreid, "Fmeasure", eval.getFmeasure());
+
+			if (testMap.size() > 0 && classifiedMap.size() > 0) {
+				genre_count++;
+				eval.runEvaluation(testMap, classifiedMap);
+				
+				db.dbAddEvalGenre(table, genreid, "Precision",
+						eval.getPrecision());
+				db.dbAddEvalGenre(table, genreid, "Recall", eval.getRecall());
+				db.dbAddEvalGenre(table, genreid, "Fmeasure",
+						eval.getFmeasure());
+
+				precision += eval.getPrecision();
+				recall += eval.getRecall();
+				fmeasure += eval.getFmeasure();
+				
+				System.out.println(genreid);
+				System.out.println("Precision: " + eval.getPrecision());
+				System.out.println("Recall: " + eval.getRecall());
+				System.out.println("Fmeasure: " + eval.getFmeasure());
+			}
 		}
 		
+		precision = (precision/genre_count);
+		recall = (recall/genre_count);
+		fmeasure = (fmeasure/genre_count);
+		
+		db.dbCreateEvalTable("Total_"+table);
+		db.dbAddEval("Total_"+table, classified, "Precision", precision);
+		db.dbAddEval("Total_"+table, classified, "Recall", recall);
+		db.dbAddEval("Total_"+table, classified, "Fmeasure", fmeasure);
+
 	}
-	
+
 	public boolean tableExists(String name) {
 		return db.tableExists(name);
 	}
-	
+
 	public void deleteContent(String name) {
 		db.dbDeleteFromTable(name);
+	}
+
+	public void testEval(int tp, int fp, int fn) {
+		eval.setTP(tp);
+		eval.setFP(fp);
+		eval.setFN(fn);
+
+		// eval.setPrecision();
+		System.out.println("Precision: " + eval.getPrecision());
+		// eval.setRecall();
+		System.out.println("Recall: " + eval.getRecall());
+		// eval.setFmeasure();
+		System.out.println("Fmeasure: " + eval.getFmeasure());
 	}
 }

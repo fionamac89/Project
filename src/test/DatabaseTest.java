@@ -1,6 +1,7 @@
 package test;
 
 import java.util.List;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -17,7 +18,7 @@ public class DatabaseTest {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		db = new Database();
+		db = new Database("jdbc:mysql://localhost:3306/fdb11130");
 		db.dbConnect();
 	}
 
@@ -59,7 +60,7 @@ public class DatabaseTest {
 
 	@Test
 	public void testDbGetGenreList() {
-		genres = db.dbGetGenreList();
+		//genres = db.dbGetGenreList();
 		//System.out.println(genres);
 	}
 
@@ -70,11 +71,11 @@ public class DatabaseTest {
 
 	@Test
 	public void testDbGetMoviesForGenre() {
-		genres = db.dbGetGenreList();
-		for(Integer id : genres) {
+		//genres = db.dbGetGenreList();
+		//for(Integer id : genres) {
 			//movies = db.dbGetMoviesForGenre(id);
 			//System.out.println(movies);
-		}
+		//}
 
 	}
 
@@ -111,7 +112,7 @@ public class DatabaseTest {
 	
 	@Test
 	public void testDbCreateClassifiedTable() {
-		db.dbCreateClassifiedTable("Classified_SSW");
+		//db.dbCreateClassifiedTable("Classified_SSW");
 	}
 	
 	@Test
@@ -122,6 +123,7 @@ public class DatabaseTest {
 	@Test
 	public void testDbGetTestSet() {
 		// fail("Not yet implemented"); // TODO
+		System.out.println(db.dbGetEvalScore("Eval_SSW_1000", "Precision", 12));
 	}
 
 	@Test

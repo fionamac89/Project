@@ -68,7 +68,7 @@ public class Database {
 			}
 		}
 	}
-	
+
 	public void dbCreateFGLink(String name) {
 		PreparedStatement pst = null;
 		try {
@@ -92,13 +92,13 @@ public class Database {
 			}
 		}
 	}
-	
+
 	public void dbInsertMovie(Movie movie, String list, String fg) {
 		PreparedStatement pst = null;
 		long key = movie.getId();
 		try {
-			pst = con
-					.prepareStatement("INSERT IGNORE INTO "+list+"(ID, Title, Overview) VALUES(?,?,?)");
+			pst = con.prepareStatement("INSERT IGNORE INTO " + list
+					+ "(ID, Title, Overview) VALUES(?,?,?)");
 
 			for (String genre : movie.getGenres()) {
 				pst.setLong(1, key);
@@ -134,8 +134,8 @@ public class Database {
 	private void dbCreateFGLink(String fg, Movie movie, String genre) {
 		PreparedStatement pst = null;
 		try {
-			pst = con
-					.prepareStatement("INSERT IGNORE INTO "+fg+"(FilmID, GenreID) VALUES(?,?)");
+			pst = con.prepareStatement("INSERT IGNORE INTO " + fg
+					+ "(FilmID, GenreID) VALUES(?,?)");
 			pst.setLong(1, movie.getId());
 			int genreID = dbGetGenreID(genre);
 			pst.setInt(2, genreID);
@@ -325,8 +325,7 @@ public class Database {
 		List<Integer> movies = new ArrayList<Integer>();
 		String sql = "";
 		try {
-			sql = "SELECT FilmID FROM " + name
-					+ " WHERE GenreID=?";
+			sql = "SELECT FilmID FROM " + name + " WHERE GenreID=?";
 			pst = con.prepareStatement(sql);
 			pst.setInt(1, genre);
 			rs = pst.executeQuery();
@@ -522,12 +521,14 @@ public class Database {
 	}
 
 	public Map<Integer, Integer> dbGetTestSet(String suffix) {
-		PreparedStatement pst = null;
+		Statement pst = null;
 		ResultSet rs = null;
+		String sql = "";
 		Map<Integer, Integer> test = new HashMap<Integer, Integer>();
 		try {
-			pst = con.prepareStatement("SELECT * FROM TestSet" + suffix);
-			rs = pst.executeQuery();
+			sql = "SELECT * FROM TestSet" + suffix;
+			pst = con.createStatement();
+			rs = pst.executeQuery(sql);
 			while (rs.next()) {
 				test.put(rs.getInt("FilmID"), rs.getInt("GenreID"));
 			}
@@ -547,10 +548,10 @@ public class Database {
 				lgr.log(Level.WARNING, ex.getMessage(), ex);
 			}
 		}
-
+		System.out.println("Test Set size: " + test.size());
 		return test;
 	}
-
+	
 	public void dbPopulateThesaurus(Map<String, Integer> thes, int genreid,
 			String name) {
 		PreparedStatement pst = null;
@@ -642,38 +643,6 @@ public class Database {
 				lgr.log(Level.WARNING, ex.getMessage(), ex);
 			}
 		}
-	}
-
-	public Map<Integer, Integer> dbGetTable(String name) {
-		Map<Integer, Integer> classified = new HashMap<Integer, Integer>();
-		Statement st = null;
-		ResultSet rs = null;
-		String sql = "";
-		try {
-			sql = "SELECT * FROM " + name;
-			st = con.createStatement();
-			rs = st.executeQuery(sql);
-			while (rs.next()) {
-				classified.put(rs.getInt("FilmID"), rs.getInt("GenreID"));
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				if (st != null) {
-					st.close();
-				}
-				if (rs != null) {
-					rs.close();
-				}
-
-			} catch (SQLException ex) {
-				Logger lgr = Logger.getLogger(Database.class.getName());
-				lgr.log(Level.WARNING, ex.getMessage(), ex);
-			}
-		}
-
-		return classified;
 	}
 
 	public void dbCreateClassifiedTable(String name) {
@@ -806,8 +775,7 @@ public class Database {
 		PreparedStatement pst = null;
 		try {
 			String sql = "INSERT IGNORE INTO " + name
-					+ "(GenreID, Type, Score) VALUES (?,?,?) VALUES (?,?)";
-			System.out.println(sql);
+					+ "(GenreID, Type, Score) VALUES (?,?,?)";
 			pst = con.prepareStatement(sql);
 
 			pst.setInt(1, genreid);
@@ -834,8 +802,8 @@ public class Database {
 		Statement st = null;
 		try {
 			st = con.createStatement();
-			st.execute("DELETE FROM "+name);
-			System.out.println(name+" content deleted.");
+			st.execute("DELETE FROM " + name);
+			System.out.println(name + " content deleted.");
 		} catch (SQLException ex) {
 			Logger lgr = Logger.getLogger(Database.class.getName());
 			lgr.log(Level.SEVERE, ex.getMessage(), ex);
@@ -893,4 +861,36 @@ public class Database {
 		}
 		return exists;
 	}
+
+	public double dbGetEvalScore(String table, String type, int genreid) {
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+		double score = 0;
+		try {
+			pst = con.prepareStatement("SELECT Score FROM " + table + " WHERE GenreID=? AND Type=?");
+			pst.setInt(1, genreid);
+			pst.setString(2, type);
+			rs = pst.executeQuery();
+			while (rs.next()) {
+				score=rs.getDouble("Score");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (pst != null) {
+					pst.close();
+				}
+				if (rs != null) {
+					rs.close();
+				}
+
+			} catch (SQLException ex) {
+				Logger lgr = Logger.getLogger(Database.class.getName());
+				lgr.log(Level.WARNING, ex.getMessage(), ex);
+			}
+		}
+		return score;
+	}
+	
 }

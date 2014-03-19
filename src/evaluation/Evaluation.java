@@ -1,42 +1,36 @@
 package evaluation;
 
 import java.util.Map;
-import java.util.Map.Entry;
 
 public class Evaluation {
 
-	private int truepos = 0;
-	private int falsepos = 0;
-	private int falseneg = 0;
+	private double truepos = 0;
+	private double falsepos = 0;
+	private double falseneg = 0;
 
 	private double precision = 0;
 	private double recall = 0;
 	private double fmeasure = 0;
 
 	public Evaluation() {
-
+		
 	}
 
-	public void runEvaluation(Map<Integer, Integer> gold,
-			Map<Integer, Integer> test) {
-		System.out.println("Gold size: " + gold.size());
-		System.out.println("Test size: " + test.size());
-		for (Entry<Integer, Integer> e : gold.entrySet()) {
-			if (test.containsKey(e.getKey())) {
-				if (e.getValue() == test.get(e.getKey())) {
-					truepos++;
-				} else {
-					falseneg++;
-				}
+	public void runEvaluation(Map<Integer, Integer> gold, Map<Integer, Integer> classified) {
+		for(Integer filmid : gold.keySet()) {
+			if(classified.containsKey(filmid)) {
+				truepos++;
+			} else {
+				falseneg++;
 			}
 		}
-
-		for (Entry<Integer, Integer> f : test.entrySet()) {
-			if (!gold.containsKey(f.getKey())) {
+		
+		for(Integer filmid : classified.keySet()) {
+			if(!gold.containsKey(filmid)) {
 				falsepos++;
 			}
 		}
-
+		
 		setPrecision();
 		setRecall();
 		setFmeasure();
@@ -44,27 +38,54 @@ public class Evaluation {
 
 	private void setPrecision() {
 
-		precision = truepos / (truepos + falsepos);
+		this.precision = this.truepos / (this.truepos + this.falsepos);
 	}
 
 	private void setRecall() {
-		recall = truepos / (truepos + falseneg);
+		this.recall = this.truepos / (this.truepos + this.falseneg);
 	}
 
 	private void setFmeasure() {
-		fmeasure = 2 * ((precision * recall) / (precision + recall));
+		this.fmeasure = 2 * ((this.precision * this.recall) / (this.precision + this.recall));
+	}
+
+	public double getTruepos() {
+		return truepos;
+	}
+
+	public double getFalsepos() {
+		return falsepos;
+	}
+
+	public double getFalseneg() {
+		return falseneg;
 	}
 
 	public double getPrecision() {
-		return precision;
+		return this.precision;
 	}
 
 	public double getRecall() {
-		return recall;
+		return this.recall;
 	}
 
 	public double getFmeasure() {
-		return fmeasure;
+		return this.fmeasure;
+	}
+
+	public void setTP(double tp) {
+		this.truepos = tp;
+		System.out.println(this.truepos);
+	}
+
+	public void setFP(double fp) {
+		this.falsepos = fp;
+		System.out.println(this.falsepos);
+	}
+
+	public void setFN(double fn) {
+		this.falseneg = fn;
+		System.out.println(this.falseneg);
 	}
 
 }
