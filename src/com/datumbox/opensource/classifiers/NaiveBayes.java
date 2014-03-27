@@ -35,7 +35,7 @@ import java.util.Map;
  * @see <a href="http://blog.datumbox.com/developing-a-naive-bayes-text-classifier-in-java/">http://blog.datumbox.com/developing-a-naive-bayes-text-classifier-in-java/</a>
  */
 public class NaiveBayes {
-    private double chisquareCriticalValue = 10.83; //equivalent to pvalue 0.001. It is used by feature selection algorithm
+    //private double chisquareCriticalValue = 10.83; //equivalent to pvalue 0.001. It is used by feature selection algorithm
     
     private NaiveBayesKnowledgeBase knowledgeBase;
     
@@ -62,24 +62,6 @@ public class NaiveBayes {
      */
     public NaiveBayesKnowledgeBase getKnowledgeBase() {
         return knowledgeBase;
-    }
-    
-    /**
-     * Gets the chisquareCriticalValue paramter.
-     * 
-     * @return 
-     */
-    public double getChisquareCriticalValue() {
-        return chisquareCriticalValue;
-    }
-    
-    /**
-     * Sets the chisquareCriticalValue parameter.
-     * 
-     * @param chisquareCriticalValue 
-     */
-    public void setChisquareCriticalValue(double chisquareCriticalValue) {
-        this.chisquareCriticalValue = chisquareCriticalValue;
     }
     
     /**
@@ -132,20 +114,6 @@ public class NaiveBayes {
         
         //the FeatureStats object contains statistics about all the features found in the documents
         FeatureStats stats = featureExtractor.extractFeatureStats(dataset); //extract the stats of the dataset
-        
-        //we pass this information to the feature selection algorithm and we get a list with the selected features
-       /*Map<String, Double> selectedFeatures = featureExtractor.chisquare(stats, chisquareCriticalValue);
-        
-        //clip from the stats all the features that are not selected
-        Iterator<Map.Entry<String, Map<String, Integer>>> it = stats.featureCategoryJointCount.entrySet().iterator();
-        while(it.hasNext()) {
-            String feature = it.next().getKey();
-        
-            if(selectedFeatures.containsKey(feature)==false) {
-                //if the feature is not in the selectedFeatures list remove it
-                it.remove();
-            }
-        }*/
         
         return stats;
     }

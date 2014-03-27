@@ -16,7 +16,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jsonparser.Movie;
-
+/**
+ * This class is used to handle all communication and connectivity between the
+ * program and the MySQL database.
+ * 
+ * @author Fiona MacIsaac
+ *
+ */
 public class Database {
 
 	private Connection con = null;
@@ -24,6 +30,11 @@ public class Database {
 	private String user = "";
 	private String password = "";
 
+	/**
+	 * Constructor used to initialize the login parameters for the database
+	 * and then connect to said database.
+	 * @param url
+	 */
 	public Database(String url) {
 		this.url = url;
 		this.user = "fdb11130";
@@ -31,17 +42,19 @@ public class Database {
 		dbConnect();
 	}
 
+	/**
+	 * Make the connection to the database using the class variables.
+	 * Return an error message
+	 */
 	public void dbConnect() {
-		/*
-		 * test this connection on a uni pc
-		 */
+		
 		try {
 
 			this.con = DriverManager.getConnection(this.url, this.user,
 					this.password);
 
 		} catch (SQLException e) {
-			e.printStackTrace();
+			System.out.println("** Database Connection issue. **");
 		}
 	}
 
@@ -698,7 +711,7 @@ public class Database {
 		try {
 			String sql = "CREATE TABLE "
 					+ name
-					+ "(Classification VARCHAR(64) NOT NULL, Type VARCHAR(12) NOT NULL, Score DOUBLE(6,4) NOT NULL);";
+					+ "(Classification VARCHAR(64) NOT NULL, PrecisionScore DOUBLE(6,4) NOT NULL, RecallScore DOUBLE(6,4) NOT NULL, FmeasureScore DOUBLE(6,4) NOT NULL, PRIMARY KEY (Classification));";
 			pst = con.prepareStatement(sql);
 			pst.executeUpdate();
 		} catch (SQLException ex) {
@@ -756,7 +769,7 @@ public class Database {
 		try {
 			String sql = "CREATE TABLE "
 					+ name
-					+ "(GenreID INT(6) NOT NULL, Type VARCHAR(12) NOT NULL, Score DOUBLE(6,4) NOT NULL, FOREIGN KEY (GenreID) REFERENCES GenreTest(ID));";
+					+ "(GenreID INT(6) NOT NULL, PrecisionScore DOUBLE(6,4) NOT NULL, RecallScore DOUBLE(6,4) NOT NULL, FmeasureScore DOUBLE(6,4) NOT NULL, FOREIGN KEY (GenreID) REFERENCES GenreTest(ID));";
 			pst = con.prepareStatement(sql);
 			pst.executeUpdate();
 		} catch (SQLException ex) {
@@ -775,18 +788,18 @@ public class Database {
 		}
 	}
 
-	public void dbAddEval(String name, String className, String type,
-			double score) {
+	public void dbAddEval(String name, String className, double precision, double recall, double fmeasure) {
 		PreparedStatement pst = null;
 		try {
 			String sql = "INSERT IGNORE INTO " + name
-					+ "(Classification, Type, Score) VALUES (?,?,?)";
+					+ "(Classification, PrecisionScore, RecallScore, FmeasureScore) VALUES (?,?,?,?)";
 			System.out.println(sql);
 			pst = con.prepareStatement(sql);
 
 			pst.setString(1, className);
-			pst.setString(2, type);
-			pst.setDouble(3, score);
+			pst.setDouble(2, precision);
+			pst.setDouble(3, recall);
+			pst.setDouble(4, fmeasure);
 			pst.executeUpdate();
 
 		} catch (SQLException ex) {
@@ -804,17 +817,17 @@ public class Database {
 		}
 	}
 
-	public void dbAddEvalGenre(String name, int genreid, String type,
-			double score) {
+	public void dbAddEvalGenre(String name, int genreid, double precision, double recall, double fmeasure) {
 		PreparedStatement pst = null;
 		try {
 			String sql = "INSERT IGNORE INTO " + name
-					+ "(GenreID, Type, Score) VALUES (?,?,?)";
+					+ "(GenreID, PrecisionScore, RecallScore, FmeasureScore) VALUES (?,?,?,?)";
 			pst = con.prepareStatement(sql);
 
 			pst.setInt(1, genreid);
-			pst.setString(2, type);
-			pst.setDouble(3, score);
+			pst.setDouble(2, precision);
+			pst.setDouble(3, recall);
+			pst.setDouble(4, fmeasure);
 			pst.executeUpdate();
 
 		} catch (SQLException ex) {
@@ -854,10 +867,6 @@ public class Database {
 		}
 	}
 
-	/*
-	 * TODO: add in getTest and getClassified by genre.
-	 */
-
 	public void dbDisconnect() {
 		try {
 			if (con != null) {
@@ -868,7 +877,7 @@ public class Database {
 		}
 	}
 
-	public boolean tableExists(String name) {
+	public boolean dbTableExists(String name) {
 		boolean exists = false;
 		DatabaseMetaData dbm;
 		ResultSet tables = null;
@@ -895,36 +904,35 @@ public class Database {
 		}
 		return exists;
 	}
-
-	public double dbGetEvalScore(String table, String type, int genreid) {
-		PreparedStatement pst = null;
-		ResultSet rs = null;
-		double score = 0;
+	
+	public List<String> dbListTables() {
+		DatabaseMetaData dbm;
+		List<String> tableList = new ArrayList<String>();
+		ResultSet tables = null;
 		try {
-			pst = con.prepareStatement("SELECT Score FROM " + table + " WHERE GenreID=? AND Type=?");
-			pst.setInt(1, genreid);
-			pst.setString(2, type);
-			rs = pst.executeQuery();
-			while (rs.next()) {
-				score=rs.getDouble("Score");
+			dbm = con.getMetaData();
+			tables = dbm.getTables(null, null, "%", null);
+		
+			while(tables.next()){
+				tableList.add(tables.getString("TABLE_NAME"));
 			}
-		} catch (SQLException e) {
-			e.printStackTrace();
+			
+
+		} catch (SQLException ex) {
+			Logger lgr = Logger.getLogger(Database.class.getName());
+			lgr.log(Level.SEVERE, ex.getMessage(), ex);
+
 		} finally {
 			try {
-				if (pst != null) {
-					pst.close();
+				if (tables != null) {
+					tables.close();
 				}
-				if (rs != null) {
-					rs.close();
-				}
-
 			} catch (SQLException ex) {
 				Logger lgr = Logger.getLogger(Database.class.getName());
 				lgr.log(Level.WARNING, ex.getMessage(), ex);
 			}
 		}
-		return score;
+		return tableList;
 	}
 	
 }

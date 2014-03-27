@@ -1,5 +1,7 @@
 package main;
 
+import java.util.List;
+
 
 public interface ISystem {
 
@@ -7,6 +9,8 @@ public interface ISystem {
 	public void addMovieList(String filepath, String list, String fg);
 	public void addGenre();
 	public void addGenreList(String filepath);
+	public void createTrainingTable(String suffix);
+	public void createTestTable(String suffix);
 	public void createTrainingSet(int size, String suffix, String source);
 	public void createThesaurus(String name);
 	public void setStopWords(String filepath);
@@ -17,10 +21,11 @@ public interface ISystem {
 	public void archiveClassified(String name);
 	public void deleteContent(String name);
 	public boolean tableExists(String name);
+	public List<String> getTables();
 	public void populateThesaurus2(String string, String thesName, String suffix);
-	public void createEval(String evalName);
-	public void testEval(int tp, int fp, int fn);
+	public void createEval();
 	public void runEvalPerGenre(String evalName, String suffix, String className);
 	public void createEvalGenre(String evalName);
-	public void trainClassifier2(String thesName, int i, int j);
+	public void trainClassifier2(String thesName, int upper, int lower);
+
 }

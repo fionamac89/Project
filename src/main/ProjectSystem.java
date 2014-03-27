@@ -26,8 +26,12 @@ public class ProjectSystem implements ISystem {
 	private Classifier cls = null;
 	private Evaluation eval = null;
 
-	public ProjectSystem() {
-		db = new Database("jdbc:mysql://localhost:3306/fdb11130");
+	public ProjectSystem(boolean uniLogin) {
+		if(uniLogin) {
+			db = new Database("jdbc:mysql://devweb2013.cis.strath.ac.uk:3306/fdb11130");
+		} else {
+			db = new Database("jdbc:mysql://localhost:3306/fdb11130");	
+		}
 		parser = new Parser();
 		cls = new Classifier();
 		tagger = new Tagger();
@@ -224,7 +228,8 @@ public class ProjectSystem implements ISystem {
 		Map<Integer, String> genreList = db.dbGetGenreListMap();
 
 		for (Integer genreid : genreList.keySet()) {
-			List<String> wordsList = db.dbApplyThreshold(name, genreid, upper, lower);
+			List<String> wordsList = db.dbApplyThreshold(name, genreid, upper,
+					lower);
 			cls.addToDataset(genreList.get(genreid), cls.readLines(wordsList));
 		}
 		cls.trainClassifier();
@@ -232,7 +237,7 @@ public class ProjectSystem implements ISystem {
 		cls.resetClassifier();
 		System.out.println("Classifier Trained");
 	}
-	
+
 	public void createClassified(String name) {
 		db.dbCreateClassifiedTable(name);
 		System.out.println("Classified Table Created");
@@ -247,9 +252,8 @@ public class ProjectSystem implements ISystem {
 	 * TODO: Finish these processes. Update database class.
 	 */
 
-	public void createEval(String name) {
-		db.dbCreateEvalTable(name);
-		System.out.println("Eval table created");
+	public void createEval() {
+		db.dbCreateEvalTable("Total_Eval");
 	}
 
 	public void createEvalGenre(String name) {
@@ -273,57 +277,45 @@ public class ProjectSystem implements ISystem {
 			testMap = db.dbGetMoviesForGenreMap(genreid, "TestSet" + test);
 			classifiedMap = db.dbGetMoviesForGenreMap(genreid, classified);
 
-			if (testMap.size() > 0 && classifiedMap.size() > 0) {
-				genre_count++;
-				eval.runEvaluation(testMap, classifiedMap);
+			genre_count++;
+			eval.runEvaluation(testMap, classifiedMap);
+			System.out.println("TP: " + eval.getTruepos());
+			System.out.println("FP: " + eval.getFalsepos());
+			System.out.println("FN: " + eval.getFalseneg());
 
-				db.dbAddEvalGenre(table, genreid, "Precision",
-						eval.getPrecision());
-				db.dbAddEvalGenre(table, genreid, "Recall", eval.getRecall());
-				db.dbAddEvalGenre(table, genreid, "Fmeasure",
-						eval.getFmeasure());
+			db.dbAddEvalGenre(table, genreid, eval.getPrecision(),
+					eval.getRecall(), eval.getFmeasure());
 
+			if (eval.getPrecision() > 0 && eval.getRecall() > 0 && eval.getFmeasure() > 0) {
 				precision += eval.getPrecision();
 				recall += eval.getRecall();
 				fmeasure += eval.getFmeasure();
-
-				System.out.println(genreid);
-				System.out.println("Precision: " + eval.getPrecision());
-				System.out.println("Recall: " + eval.getRecall());
-				System.out.println("Fmeasure: " + eval.getFmeasure());
 			}
+
+			System.out.println(genreid);
+			System.out.println("Precision: " + eval.getPrecision());
+			System.out.println("Recall: " + eval.getRecall());
+			System.out.println("Fmeasure: " + eval.getFmeasure());
 		}
 
 		precision = (precision / genre_count);
 		recall = (recall / genre_count);
 		fmeasure = (fmeasure / genre_count);
 
-		db.dbCreateEvalTable("Total_" + table);
-		db.dbAddEval("Total_" + table, classified, "Precision", precision);
-		db.dbAddEval("Total_" + table, classified, "Recall", recall);
-		db.dbAddEval("Total_" + table, classified, "Fmeasure", fmeasure);
+		db.dbAddEval("Total_Eval", classified, precision, recall, fmeasure);
 
 	}
 
 	public boolean tableExists(String name) {
-		return db.tableExists(name);
+		return db.dbTableExists(name);
+	}
+	
+	public List<String> getTables() {
+		return db.dbListTables();
 	}
 
 	public void deleteContent(String name) {
 		db.dbDeleteFromTable(name);
-	}
-
-	public void testEval(int tp, int fp, int fn) {
-		eval.setTP(tp);
-		eval.setFP(fp);
-		eval.setFN(fn);
-
-		// eval.setPrecision();
-		System.out.println("Precision: " + eval.getPrecision());
-		// eval.setRecall();
-		System.out.println("Recall: " + eval.getRecall());
-		// eval.setFmeasure();
-		System.out.println("Fmeasure: " + eval.getFmeasure());
 	}
 
 }

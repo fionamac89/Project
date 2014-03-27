@@ -13,40 +13,46 @@ public class Evaluation {
 	private double fmeasure = 0;
 
 	public Evaluation() {
-		
+
 	}
 
-	public void runEvaluation(Map<Integer, Integer> gold, Map<Integer, Integer> classified) {
-		for(Integer filmid : gold.keySet()) {
-			if(classified.containsKey(filmid)) {
+	public void runEvaluation(Map<Integer, Integer> gold,
+			Map<Integer, Integer> classified) {
+		for (Integer filmid : gold.keySet()) {
+			if (classified.containsKey(filmid)) {
 				truepos++;
 			} else {
 				falseneg++;
 			}
 		}
-		
-		for(Integer filmid : classified.keySet()) {
-			if(!gold.containsKey(filmid)) {
+
+		for (Integer filmid : classified.keySet()) {
+			if (!gold.containsKey(filmid)) {
 				falsepos++;
 			}
 		}
-		
+
 		setPrecision();
 		setRecall();
 		setFmeasure();
 	}
 
 	private void setPrecision() {
-
-		this.precision = this.truepos / (this.truepos + this.falsepos);
+		if (this.truepos > 0 || this.falsepos > 0) {
+			this.precision = this.truepos / (this.truepos + this.falsepos);
+		}
 	}
 
 	private void setRecall() {
-		this.recall = this.truepos / (this.truepos + this.falseneg);
+		if (this.truepos > 0 || this.falseneg > 0) {
+			this.recall = this.truepos / (this.truepos + this.falseneg);
+		}
 	}
 
 	private void setFmeasure() {
-		this.fmeasure = 2 * ((this.precision * this.recall) / (this.precision + this.recall));
+		if (this.precision > 0 || this.recall > 0) {
+			this.fmeasure = 2 * ((this.precision * this.recall) / (this.precision + this.recall));
+		}
 	}
 
 	public double getTruepos() {
@@ -71,21 +77,6 @@ public class Evaluation {
 
 	public double getFmeasure() {
 		return this.fmeasure;
-	}
-
-	public void setTP(double tp) {
-		this.truepos = tp;
-		System.out.println(this.truepos);
-	}
-
-	public void setFP(double fp) {
-		this.falsepos = fp;
-		System.out.println(this.falsepos);
-	}
-
-	public void setFN(double fn) {
-		this.falseneg = fn;
-		System.out.println(this.falseneg);
 	}
 
 }
