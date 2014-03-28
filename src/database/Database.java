@@ -44,7 +44,7 @@ public class Database {
 
 	/**
 	 * Make the connection to the database using the class variables.
-	 * Return an error message
+	 * Return an error message if the connection is not made successfully.
 	 */
 	public void dbConnect() {
 		
@@ -58,6 +58,12 @@ public class Database {
 		}
 	}
 
+	/**
+	 * Create the table that will hold the film data of id, title and overview
+	 * using the name parameter as the name of the table.
+	 * 
+	 * @param name
+	 */
 	public void dbCreateFilmList(String name) {
 		PreparedStatement pst = null;
 		try {
@@ -82,6 +88,12 @@ public class Database {
 		}
 	}
 
+	/**
+	 * Create the table that will contain the linking data to connect a film with its
+	 * respective genres
+	 * 
+	 * @param name
+	 */
 	public void dbCreateFGLink(String name) {
 		PreparedStatement pst = null;
 		try {
@@ -106,6 +118,15 @@ public class Database {
 		}
 	}
 
+	/**
+	 * Insert a movie that has been parsed from a file into the database.
+	 * This include creating the linker entries required for each film to
+	 * genre mapping.
+	 * 
+	 * @param movie
+	 * @param list
+	 * @param fg
+	 */
 	public void dbInsertMovie(Movie movie, String list, String fg) {
 		PreparedStatement pst = null;
 		long key = movie.getId();
@@ -140,10 +161,17 @@ public class Database {
 				lgr.log(Level.WARNING, ex.getMessage(), ex);
 			}
 
-			System.out.println("Added entry");
 		}
 	}
 
+	/**
+	 * Private method called by the dbInsertMovie used to add a linker record
+	 * for each film to genre mapping.
+	 * 
+	 * @param fg
+	 * @param movie
+	 * @param genre
+	 */
 	private void dbCreateFGLink(String fg, Movie movie, String genre) {
 		PreparedStatement pst = null;
 		try {
@@ -172,6 +200,12 @@ public class Database {
 
 	}
 
+	/**
+	 * Used to return the string name of a genre when given the id for a genre.
+	 * 
+	 * @param genre
+	 * @return
+	 */
 	public int dbGetGenreID(String genre) {
 		PreparedStatement pst = null;
 		ResultSet rs = null;
@@ -207,6 +241,11 @@ public class Database {
 		return num;
 	}
 
+	/**
+	 * Return the full list of genre ids from the genre table.
+	 * 
+	 * @return
+	 */
 	public List<Integer> dbGetGenreList() {
 		PreparedStatement pst = null;
 		ResultSet rs = null;
@@ -238,6 +277,12 @@ public class Database {
 		return genres;
 	}
 
+	/**
+	 * Return a map of all the genres in the table represented by their
+	 * id and string.
+	 * 
+	 * @return
+	 */
 	public Map<Integer, String> dbGetGenreListMap() {
 		PreparedStatement pst = null;
 		ResultSet rs = null;
@@ -269,6 +314,11 @@ public class Database {
 		return genres;
 	}
 
+	/**
+	 * Insert the list of genre id and strings from file to the database.
+	 * 
+	 * @param genreMap
+	 */
 	public void dbInsertGenre(Map<Long, String> genreMap) {
 		PreparedStatement pst = null;
 		try {
@@ -299,6 +349,15 @@ public class Database {
 		}
 	}
 
+	/**
+	 * Return the map of film and genre id pairs for a specific genre id.
+	 * The table parameter is used so that this type of data extraction can be
+	 * used on training, test or classified data tables as they all have the same format.
+	 * 
+	 * @param genre
+	 * @param table
+	 * @return
+	 */
 	public Map<Integer, Integer> dbGetMoviesForGenreMap(int genre, String table) {
 		PreparedStatement pst = null;
 		ResultSet rs = null;
@@ -332,6 +391,15 @@ public class Database {
 		return movies;
 	}
 
+	/**
+	 * Return the list of film ids for a specific genre. The table parameter is used so that 
+	 * this type of data extraction can be used on training, test or classified data tables 
+	 * as they all have the same format.
+	 * 
+	 * @param genre
+	 * @param name
+	 * @return
+	 */
 	public List<Integer> dbGetMoviesForGenreList(int genre, String name) {
 		PreparedStatement pst = null;
 		ResultSet rs = null;
@@ -365,6 +433,12 @@ public class Database {
 		return movies;
 	}
 
+	/**
+	 * Return the overview for the film id given.
+	 * 
+	 * @param filmid
+	 * @return
+	 */
 	public String dbGetOverview(int filmid) {
 		PreparedStatement pst = null;
 		ResultSet rs = null;
@@ -396,6 +470,13 @@ public class Database {
 		return overview;
 	}
 
+	/**
+	 * Create the training set table with the given suffix.
+	 * This helps to identify the training and test sets which are
+	 * complements of each other within the database.
+	 * 
+	 * @param suffix
+	 */
 	public void dbCreateTrainingSet(String suffix) {
 		PreparedStatement pst = null;
 		try {
@@ -421,6 +502,12 @@ public class Database {
 		}
 	}
 
+	/**
+	 * Create the test set with the given suffix. This suffix is the
+	 * same as what is used to create the training set table.
+	 * 
+	 * @param suffix
+	 */
 	public void dbCreateTestSet(String suffix) {
 		PreparedStatement pst = null;
 		try {
@@ -446,6 +533,14 @@ public class Database {
 		}
 	}
 
+	/**
+	 * Populate the training set on a per genre basis. Parameters are a genre id
+	 * and the list of films that are associated with that genre.
+	 * 
+	 * @param training
+	 * @param genreid
+	 * @param suffix
+	 */
 	public void dbPopulateTrainingSet(List<Integer> training, int genreid,
 			String suffix) {
 		PreparedStatement pst = null;
@@ -475,6 +570,14 @@ public class Database {
 		}
 	}
 
+	/**
+	 * Populate the test set on a per genre basis. Parameters are a genre id
+	 * and the list of films that are associated with that genre.
+	 * 
+	 * @param test
+	 * @param id
+	 * @param suffix
+	 */
 	public void dbPopulateTestSet(List<Integer> test, int id, String suffix) {
 		PreparedStatement pst = null;
 		try {
@@ -503,6 +606,13 @@ public class Database {
 		}
 	}
 
+	/**
+	 * Return the training set in map format so that film id and genre id pairs are
+	 * returned.
+	 * 
+	 * @param suffix
+	 * @return
+	 */
 	public Map<Integer, Integer> dbGetTrainingSet(String suffix) {
 		PreparedStatement pst = null;
 		ResultSet rs = null;
@@ -533,6 +643,13 @@ public class Database {
 		return training;
 	}
 
+	/**
+	 * Return the test set in map format so that film id and genre id pairs are
+	 * returned.
+	 * 
+	 * @param suffix
+	 * @return
+	 */
 	public Map<Integer, Integer> dbGetTestSet(String suffix) {
 		Statement pst = null;
 		ResultSet rs = null;
@@ -565,6 +682,14 @@ public class Database {
 		return test;
 	}
 	
+	/**
+	 * Populate the thesaurus table on a per genre basis - add the words and their
+	 * frequencies for the given genre id.
+	 * 
+	 * @param thes
+	 * @param genreid
+	 * @param name
+	 */
 	public void dbPopulateThesaurus(Map<String, Integer> thes, int genreid,
 			String name) {
 		PreparedStatement pst = null;
@@ -596,6 +721,13 @@ public class Database {
 		}
 	}
 
+	/**
+	 * Return the list of words from the thesaurus for a specific genre id.
+	 * 
+	 * @param genreid
+	 * @param name
+	 * @return
+	 */
 	public List<String> dbGetThesaurus(int genreid, String name) {
 		PreparedStatement pst = null;
 		ResultSet rs = null;
@@ -629,6 +761,13 @@ public class Database {
 		return entries;
 	}
 
+	/**
+	 * Populate the classified table with the given map of film id and genre
+	 * id pairs.
+	 * 
+	 * @param name
+	 * @param classified
+	 */
 	public void dbPopulateClassified(String name,
 			Map<Integer, Integer> classified) {
 		PreparedStatement pst = null;
@@ -658,6 +797,11 @@ public class Database {
 		}
 	}
 
+	/**
+	 * Create a classification table with the given name.
+	 * 
+	 * @param name
+	 */
 	public void dbCreateClassifiedTable(String name) {
 		PreparedStatement pst = null;
 		try {
@@ -682,6 +826,11 @@ public class Database {
 		}
 	}
 
+	/**
+	 * Create a thesaurus table with the given name.
+	 * 
+	 * @param name
+	 */
 	public void dbCreateThesaurus(String name) {
 		PreparedStatement pst = null;
 		try {
@@ -706,6 +855,12 @@ public class Database {
 		}
 	}
 
+	/**
+	 * Create the table to hold the overall evaluation scores for all
+	 * the experiments that have been run.
+	 * 
+	 * @param name
+	 */
 	public void dbCreateEvalTable(String name) {
 		PreparedStatement pst = null;
 		try {
@@ -730,6 +885,18 @@ public class Database {
 		}
 	}
 
+	/**
+	 * Used to apply thresholds for the improved algorithm on the thesaurus.
+	 * This means that when classification is done, this method is used to
+	 * pull the entries from the thesaurus that are between the thresholds have
+	 * been set.
+	 * 
+	 * @param name
+	 * @param genreid
+	 * @param upper
+	 * @param lower
+	 * @return
+	 */
 	public List<String> dbApplyThreshold(String name, int genreid, int upper, int lower) {
 		PreparedStatement pst = null;
 		ResultSet rs = null;
@@ -764,6 +931,12 @@ public class Database {
 		return words;
 	}
 	
+	/**
+	 * Create a table with a given name to hold the evaluation of classification
+	 * success on a per genre basis.
+	 * 
+	 * @param name
+	 */
 	public void dbCreateEvalGenreTable(String name) {
 		PreparedStatement pst = null;
 		try {
@@ -788,6 +961,17 @@ public class Database {
 		}
 	}
 
+	/**
+	 * Add a total evaluation for an algorithm. This is the precision, recall and f-measure
+	 * that is calculated as an average of the results from the per genre scores of a 
+	 * classification.
+	 * 
+	 * @param name
+	 * @param className
+	 * @param precision
+	 * @param recall
+	 * @param fmeasure
+	 */
 	public void dbAddEval(String name, String className, double precision, double recall, double fmeasure) {
 		PreparedStatement pst = null;
 		try {
@@ -817,6 +1001,15 @@ public class Database {
 		}
 	}
 
+	/**
+	 * Add an evaluation entry for a genre to a classification specific evaluation table.
+	 * 
+	 * @param name
+	 * @param genreid
+	 * @param precision
+	 * @param recall
+	 * @param fmeasure
+	 */
 	public void dbAddEvalGenre(String name, int genreid, double precision, double recall, double fmeasure) {
 		PreparedStatement pst = null;
 		try {
@@ -845,6 +1038,12 @@ public class Database {
 		}
 	}
 
+	/**
+	 * Was used during development. Allows for a quick and simple way to empty
+	 * a table of entries.
+	 * 
+	 * @param name
+	 */
 	public void dbDeleteFromTable(String name) {
 		Statement st = null;
 		try {
@@ -867,6 +1066,9 @@ public class Database {
 		}
 	}
 
+	/**
+	 * Disconnect from the database.
+	 */
 	public void dbDisconnect() {
 		try {
 			if (con != null) {
@@ -877,6 +1079,13 @@ public class Database {
 		}
 	}
 
+	/**
+	 * Return true if a table name is already in use in the database,
+	 * return false if the table name is not in use.
+	 * 
+	 * @param name
+	 * @return
+	 */
 	public boolean dbTableExists(String name) {
 		boolean exists = false;
 		DatabaseMetaData dbm;
@@ -905,6 +1114,11 @@ public class Database {
 		return exists;
 	}
 	
+	/**
+	 * Return the list of all tables within the database.
+	 * 
+	 * @return
+	 */
 	public List<String> dbListTables() {
 		DatabaseMetaData dbm;
 		List<String> tableList = new ArrayList<String>();

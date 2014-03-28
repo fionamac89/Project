@@ -19,7 +19,14 @@ import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.util.CharArraySet;
 import org.apache.lucene.util.Version;
-
+/**
+ * Class used to perform the algorithm for thesaurus construction. This involves
+ * making the the token stream, applying the appropriate filters and performing
+ * the term occurrence algorithm.
+ * 
+ * @author Fiona MacIsaac
+ *
+ */
 public class Tagger {
 
 	private TokenStream tokenStream = null;
@@ -35,10 +42,11 @@ public class Tagger {
 		stopwords = new ArrayList<String>();
 	}
 
-	/*
-	 * Stop word analysis
+	/**
+	 * Create the stop word list from the file given.
+	 * 
+	 * @param filepath
 	 */
-
 	public void createStopList(String filepath) {
 		Scanner in;
 		try {
@@ -52,12 +60,19 @@ public class Tagger {
 			defaultList = false;
 
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
 	}
 
+	/**
+	 * Create the token stream and apply the relevant filter. This is used
+	 * for the first thesaurus algorithm where the lower case enforcement is
+	 * not used at this point.
+	 * 
+	 * @param content
+	 * @param filter
+	 */
 	public void setFilter(String content, String filter) {
 		tokenStream = new StandardTokenizer(luceneVersion, new StringReader(
 				content));
@@ -69,7 +84,6 @@ public class Tagger {
 			setStemFilter();
 			break;
 		case "ssw":
-			// setStemStopFilter();
 			setStopWordFilter();
 			setStemFilter();
 			break;
@@ -79,6 +93,14 @@ public class Tagger {
 		}
 	}
 
+	/**
+	 * Create the token stream and apply the relevant filter. This is used
+	 * for the second thesaurus algorithm where the lower case enforcement is
+	 * used before the text is tokenised/filtered.
+	 * 
+	 * @param content
+	 * @param filter
+	 */
 	public void setFilter2(String content, String filter) {
 		tokenStream = new StandardTokenizer(luceneVersion, new StringReader(
 				content.toLowerCase(Locale.UK)));
@@ -90,7 +112,6 @@ public class Tagger {
 			setStemFilter();
 			break;
 		case "ssw":
-			// setStemStopFilter();
 			setStopWordFilter();
 			setStemFilter();
 			break;
@@ -100,6 +121,9 @@ public class Tagger {
 		}
 	}
 
+	/**
+	 * Apply the stop word filter to the Token Stream.
+	 */
 	private void setStopWordFilter() {
 
 		if (defaultList) {
@@ -111,19 +135,9 @@ public class Tagger {
 		}
 	}
 
-	// public void setStemStopFilter(String content) {
-	//
-	// if (defaultList) {
-	// tokenStream = new StopFilter(luceneVersion, tokenStream,
-	// StandardAnalyzer.STOP_WORDS_SET);
-	// } else {
-	// tokenStream = new StopFilter(luceneVersion, tokenStream,
-	// StopFilter.makeStopSet(luceneVersion, stopwords));
-	// }
-	//
-	// tokenStream = new PorterStemFilter(tokenStream);
-	// }
-
+	/**
+	 * Apply the Porter Stemmer filter to the Token Stream.
+	 */
 	private void setStemFilter() {
 
 		tokenStream = new PorterStemFilter(tokenStream);
@@ -131,6 +145,10 @@ public class Tagger {
 
 	}
 
+	/**
+	 * Run the thesaurus construction algorithm. Lower case enforcement is
+	 * used as this was not done when the text was passed to the token stream.
+	 */
 	public void applyFilter() {
 		CharTermAttribute token = tokenStream
 				.addAttribute(CharTermAttribute.class);
@@ -146,11 +164,14 @@ public class Tagger {
 			tokenStream.end();
 			tokenStream.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
+	/**
+	 * Used for the second thesaurus algorithm. No lower case
+	 * enforcement is required as this was done at another stage.
+	 */
 	public void applyFilter2() {
 		CharTermAttribute token = tokenStream
 				.addAttribute(CharTermAttribute.class);
@@ -165,11 +186,16 @@ public class Tagger {
 			tokenStream.end();
 			tokenStream.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
+	/**
+	 * Perform term occurrence on the text and add the relevant
+	 * words and their frequencies to the map.
+	 * 
+	 * @param text
+	 */
 	private void termOccurrence(String text) {
 		if (importantText.containsKey(text)) {
 			int temp = importantText.get(text);
@@ -182,7 +208,13 @@ public class Tagger {
 
 	}
 
-	// Apply stemming to text for when it is used for prediction
+	/**
+	 * Prepare the stem filter to be used so that during classification
+	 * the stemmed version of words are compared.
+	 * 
+	 * @param content
+	 * @return
+	 */
 	public String classifyStemFilter(String content) {
 		StringBuilder sb = new StringBuilder();
 		tokenStream = new StandardTokenizer(luceneVersion, new StringReader(
@@ -195,7 +227,6 @@ public class Tagger {
 			tokenStream.reset();
 			while (tokenStream.incrementToken()) {
 				output = token.toString();
-				// Add numeric check here?
 				if (output != null) {
 					sb.append(output + " ");
 				}
@@ -203,20 +234,34 @@ public class Tagger {
 			tokenStream.end();
 			tokenStream.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return sb.toString();
 	}
 
+	/**
+	 * Return the list of words to be added to the thesaurus.
+	 * 
+	 * @return
+	 */
 	public Map<String, Integer> getWords() {
 		return importantText;
 	}
 
+	/**
+	 * Clear the list of words that is used for adding to the
+	 * thesaurus.
+	 */
 	public void clearWords() {
 		importantText.clear();
 	}
 
+	/**
+	 * Method for checking if a string can be cast to an integer or double.
+	 * 
+	 * @param str
+	 * @return
+	 */
 	public static boolean isNumeric(String str) {
 		try {
 			double d = Double.parseDouble(str);
@@ -226,7 +271,13 @@ public class Tagger {
 		}
 		return true;
 	}
-
+	
+	/**
+	 * Return whether the stem filter has been selected
+	 * or not.
+	 * 
+	 * @return
+	 */
 	public boolean getStemFilterStatus() {
 		return stemFilter;
 	}

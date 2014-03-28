@@ -2,7 +2,13 @@ package view;
 
 import java.io.File;
 import java.util.Scanner;
-
+/**
+ * This class is used to facilitate and validate the user input which is
+ * requested by the CommandLine class.
+ * 
+ * @author Fiona MacIsaac
+ *
+ */
 public class UserIO {
 	private Scanner inputReader = null;
 	private boolean exit = false;
@@ -11,7 +17,13 @@ public class UserIO {
 		this.inputReader = new Scanner(System.in);
 	}
 
-	// Get String
+	/**
+	 * Display appropriate text to the user requesting input then
+	 * validate this input to check it is reasonable text.
+	 * 
+	 * @param text
+	 * @return
+	 */
 	public String getString(String text) {
 		System.out.println(text);
 		String temp = "";
@@ -27,7 +39,15 @@ public class UserIO {
 
 	}
 
-	// Get Integer
+	/**
+	 * Use this method to get a size from the user that falls within a
+	 * predetermined range.
+	 * 
+	 * @param text
+	 * @param min
+	 * @param max
+	 * @return
+	 */
 	public int getIntRange(String text, int min, int max) {
 
 		int number = 0;
@@ -49,44 +69,11 @@ public class UserIO {
 		return number;
 	}
 
-	// Check filepath
-	public File getFilepath(String text) {
-		System.out.println(text);
-		File filepath = null;
-		while (!inputReader.hasNext("")) {
-			filepath = new File(inputReader.next());
-			if (!filepath.exists()) {
-				System.out.println("Invalid filepath. Try again:");
-				filepath = null;
-			}
-		}
-
-		return filepath;
-	}
-
-	// Check connection (DS login or ssh)
-	public boolean onUniNetwork(String text) {
-		System.out.println(text);
-		String temp = "";
-		boolean flag = false;
-		do {
-			temp = inputReader.next();
-			if (!temp.equals("y") && !temp.equals("n")) {
-				System.out.println("Please use y or n to answer: ");
-			}
-		} while (!temp.equals("y") && !temp.equals("n"));
-
-//		temp = inputReader.next();
-		if (temp.equals("y")) {
-			System.out.println("I am connected to uni network");
-			flag = true;
-		} else if (temp.equals("n")) {
-			flag = false;
-		}
-
-		return flag;
-	}
-
+	/**
+	 * Use this method to make certain that the user wishes to exit the program.
+	 * 
+	 * @return
+	 */
 	public boolean checkExit() {
 
 		System.out.println("Do you really wish to exit? (y/n): ");
@@ -99,10 +86,21 @@ public class UserIO {
 		return this.exit;
 	}
 
+	/**
+	 * Return if the user has chosen to exit or not.
+	 * 
+	 * @return
+	 */
 	public boolean getExit() {
 		return exit;
 	}
 
+	/**
+	 * Validate that the user has entered a proper filter. Ignore all other input.
+	 * 
+	 * @param text
+	 * @return
+	 */
 	public String getFilter(String text) {
 		System.out.println(text);
 		String temp = "";
@@ -125,6 +123,12 @@ public class UserIO {
 		return temp.trim();
 	}
 
+	/**
+	 * Return whether the user wants to use the new or old algorithm.
+	 * 
+	 * @param text
+	 * @return
+	 */
 	public boolean getAlg(String text) {
 		System.out.println(text);
 		String temp = "";

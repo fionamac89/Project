@@ -2,12 +2,16 @@ package main;
 
 import java.util.List;
 
-
+/**
+ * The Interface used between the components and the main model which is controlled by
+ * the ProjectSystem class.
+ * 
+ * @author Fiona MacIsaac
+ *
+ */
 public interface ISystem {
 
-	public void addMovie();
 	public void addMovieList(String filepath, String list, String fg);
-	public void addGenre();
 	public void addGenreList(String filepath);
 	public void createTrainingTable(String suffix);
 	public void createTestTable(String suffix);
